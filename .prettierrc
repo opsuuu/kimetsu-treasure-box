@@ -1,0 +1,25 @@
+{
+    "importOrder": [
+      "^react$|^react-i18next$",
+      "^@/page",
+      "^@/components",
+      "^@/hook|^@/utils",
+      "^@/.*|^@.*",
+      "^[^.].*",
+      "^..?/"
+    ],
+    "importOrderSeparation": false,
+    "importOrderSortSpecifiers": true,
+    "importOrderCaseInsensitive": true,
+    "jsxSingleQuote": true,
+    "singleQuote": true,
+    "semi": true,
+    "tabWidth": 2,
+    "trailingComma": "all",
+    "printWidth": 100,
+    "bracketSameLine": false,
+    "useTabs": false,
+    "arrowParens": "always",
+    "endOfLine": "auto"
+  }
+  
