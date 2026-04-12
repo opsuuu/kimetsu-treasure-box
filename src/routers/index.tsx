@@ -1,18 +1,15 @@
-import {
-  createBrowserRouter,
-  createRoutesFromElements,
-  Route,
-} from 'react-router';
+import { createBrowserRouter, createRoutesFromElements, Route } from 'react-router';
 import { routeMeta } from './meta';
 import React from 'react';
 import NotFound from '@/NotFound';
+import { PageLoading } from '@/components';
 
 export function lazyWithSuspense<T extends React.ComponentType<any>>(
   factory: () => Promise<{ default: T }>,
 ) {
   const Page = React.lazy<T>(factory);
   const Wrapped: React.FC<React.ComponentProps<T>> = (props) => (
-    <React.Suspense fallback={<div>Loading...</div>}>
+    <React.Suspense fallback={<PageLoading />}>
       <Page {...props} />
     </React.Suspense>
   );
