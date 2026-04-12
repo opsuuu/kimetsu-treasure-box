@@ -1,4 +1,6 @@
+import { Link } from 'react-router';
 import { NoshiOrnament } from '@/components';
+import { ROUTES } from '@/routers/paths';
 import HeroVisual from './visuals/HeroVisual';
 
 export default function HeroSection() {
@@ -52,12 +54,12 @@ export default function HeroSection() {
 
         {/* CTA buttons */}
         <div className='flex gap-[1.2rem] flex-wrap justify-center'>
-          <button className='bg-[linear-gradient(135deg,rgba(200,225,240,0.7),rgba(170,210,235,0.5))] border border-giyu/45 outline outline-gold/18 outline-offset-3 text-giyu px-8 py-3 rounded-none text-[0.78rem] tracking-[0.25em] cursor-pointer backdrop-blur-[6px] font-mincho'>
+          <Link to={ROUTES.ITEMS_BY_CHARACTER('giyu')} className='bg-[linear-gradient(135deg,rgba(200,225,240,0.7),rgba(170,210,235,0.5))] border border-giyu/45 outline outline-gold/18 outline-offset-3 text-giyu px-8 py-3 rounded-none text-[0.78rem] tracking-[0.25em] cursor-pointer backdrop-blur-[6px] font-mincho no-underline'>
             〔　探索義勇周邊　〕
-          </button>
-          <button className='bg-[linear-gradient(135deg,rgba(228,215,248,0.7),rgba(210,190,240,0.5))] border border-shinobu/45 outline outline-gold/18 outline-offset-3 text-shinobu px-8 py-3 rounded-none text-[0.78rem] tracking-[0.25em] cursor-pointer backdrop-blur-[6px] font-mincho'>
+          </Link>
+          <Link to={ROUTES.ITEMS_BY_CHARACTER('shinobu')} className='bg-[linear-gradient(135deg,rgba(228,215,248,0.7),rgba(210,190,240,0.5))] border border-shinobu/45 outline outline-gold/18 outline-offset-3 text-shinobu px-8 py-3 rounded-none text-[0.78rem] tracking-[0.25em] cursor-pointer backdrop-blur-[6px] font-mincho no-underline'>
             〔　探索忍周邊　〕
-          </button>
+          </Link>
         </div>
       </div>
 

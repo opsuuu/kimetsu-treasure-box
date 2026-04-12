@@ -1,6 +1,8 @@
+import { Link } from 'react-router';
 import { cn } from '@/lib/utils';
 import { JapanesePalette } from '@/constants/palette';
 import type { Character } from '@/constants/characters';
+import { ROUTES } from '@/routers/paths';
 import { Butterfly } from '../decorations';
 
 const themeConfig = {
@@ -270,15 +272,16 @@ export default function CharacterCard({ character }: CharacterCardProps) {
           ))}
         </p>
 
-        <button
+        <Link
+          to={ROUTES.ITEMS_BY_CHARACTER(character.id)}
           className={cn(
-            'border outline outline-gold/18 outline-offset-3',
+            'border outline outline-gold/18 outline-offset-3 no-underline',
             'px-6 py-[0.6rem] rounded-none text-[0.72rem] tracking-[0.22em] cursor-pointer font-mincho',
             t.btnCls,
           )}
         >
           〔　查看周邊　〕
-        </button>
+        </Link>
       </div>
     </div>
   );
