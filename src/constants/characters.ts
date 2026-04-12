@@ -14,7 +14,7 @@ export const CHARACTERS = [
     sub: 'Kocho Shinobu',
     description: `蟲柱・帶著微笑的用毒劍士
   我原本深信幸福的道路會一直延伸到很遠的地方。當它遭到破壞之後才首次驚覺⋯那種幸福是放在很薄的玻璃之上。`,
-    image: '/sinobu/main-pic-removebg.png',
+    image: '/shinobu/main-pic-removebg.png',
     theme: 'shinobu',
   },
 ] as const satisfies readonly {
