@@ -9,6 +9,13 @@ export const routeMeta: Record<string, RouteMeta> = {
     showInNav: true,
     component: () => import('@/Home'),
   },
+  [ROUTES.ITEMS]: {
+    title: '周邊圖鑑',
+    icon: '',
+    navLabel: 'Items',
+    showInNav: true,
+    component: () => import('@/Items'),
+  },
   // [ROUTES.ITEMS]: {
   //   title: '週邊圖鑑',
   //   icon: '',
