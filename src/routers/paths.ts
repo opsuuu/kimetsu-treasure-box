@@ -2,7 +2,6 @@ export const ROUTES = {
   HOME: '/',
   // 週邊列表
   ITEMS: '/items',
-  ITEMS_BY_CHARACTER: (character: string) => `/items?character=${character}`,
   // 單一商品的詳細頁，內容可能有：商品名稱、商品圖片、發售時間、商品價格、角色分類、商品類別、商品系列、商品金額（日幣）、廠商、同系列商品（相關商品）等等。
   ITEM_DETAIL: (id: string | number) => `/items/${id}`,
   // 角色列表，這頁會列出所有角色，點進去後會看該角色周邊。
