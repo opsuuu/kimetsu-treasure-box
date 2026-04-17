@@ -5,3 +5,4 @@ export { default as LoadingState } from './LoadingState';
 export { default as ErrorState } from './ErrorState';
 export { default as EmptyState } from './EmptyState';
 export { default as PageLoading } from './PageLoading';
+export { default as Header } from './Header';
