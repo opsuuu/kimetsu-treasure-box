@@ -1,4 +1,4 @@
-import { ROUTES } from './paths';
+import { ROUTES, ROUTE_PATTERNS } from './paths';
 import type { RouteMeta } from './types';
 
 export const routeMeta: Record<string, RouteMeta> = {
@@ -15,6 +15,13 @@ export const routeMeta: Record<string, RouteMeta> = {
     navLabel: 'Items',
     showInNav: true,
     component: () => import('@/Items'),
+  },
+  [ROUTE_PATTERNS.ITEM_DETAIL]: {
+    title: '商品詳細',
+    icon: '',
+    navLabel: '',
+    showInNav: false,
+    component: () => import('@/ItemDetail'),
   },
   // [ROUTES.ITEMS]: {
   //   title: '週邊圖鑑',

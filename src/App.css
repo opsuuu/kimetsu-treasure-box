@@ -224,6 +224,25 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* ── Swiper 和風覆寫 ── */
+.item-detail-swiper .swiper-button-next,
+.item-detail-swiper .swiper-button-prev {
+  color: var(--color-gold-dim);
+  width: 2rem;
+  height: 2rem;
+}
+.item-detail-swiper .swiper-button-next::after,
+.item-detail-swiper .swiper-button-prev::after {
+  font-size: 0.9rem;
+}
+.item-detail-swiper .swiper-pagination-bullet {
+  background: var(--color-gold-dim);
+  opacity: 0.35;
+}
+.item-detail-swiper .swiper-pagination-bullet-active {
+  opacity: 0.85;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
