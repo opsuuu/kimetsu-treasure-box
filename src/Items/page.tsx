@@ -1,11 +1,18 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useLocation } from 'react-router';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useInfiniteQuery, type InfiniteData } from '@tanstack/react-query';
 import { WasujiHeading, LoadingState, ErrorState, EmptyState, Header } from '@/components';
 import PageFooter from '@/components/PageFooter';
 import { useCategories } from '@/hooks';
-import { fetchItems, fetchItemsByCategory } from '@/services/items';
+import {
+  fetchFilteredItemIds,
+  fetchItemsPage,
+  PAGE_SIZE,
+  type ItemsPage,
+  type PageCursor,
+} from '@/services/items';
 import { ItemCard } from './components/ItemCard';
+import { ItemCardSkeleton } from './components/ItemCardSkeleton';
 
 type CharacterFilter = 'all' | 'giyu' | 'shinobu' | 'both';
 type CategoryFilter = 'all' | string;
@@ -26,15 +33,8 @@ export default function ItemsPage() {
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>(
     locationState?.category ?? 'all',
   );
-
-  const {
-    data: rawItems = [],
-    isLoading: itemsLoading,
-    isError: itemsError,
-  } = useQuery({
-    queryKey: categoryFilter === 'all' ? ['items'] : ['items', 'category', categoryFilter],
-    queryFn: categoryFilter === 'all' ? fetchItems : () => fetchItemsByCategory(categoryFilter),
-  });
+  const activeCategoryRef = useRef<HTMLButtonElement>(null);
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
   const {
     data: categories = [],
@@ -42,19 +42,67 @@ export default function ItemsPage() {
     isError: categoriesError,
   } = useCategories();
 
-  const items = useMemo(() => {
-    if (characterFilter === 'all') return rawItems;
-    if (characterFilter === 'both') {
-      return rawItems.filter(
-        (item) =>
-          item.item_characters.some((ic) => ic.characters.slug === 'giyu') &&
-          item.item_characters.some((ic) => ic.characters.slug === 'shinobu'),
-      );
-    }
-    return rawItems.filter((item) =>
-      item.item_characters.some((ic) => ic.characters.slug === characterFilter),
+  // 取得符合角色篩選的 item IDs
+  const { data: filteredItemIds, isLoading: idsLoading } = useQuery({
+    queryKey: ['item-ids', characterFilter],
+    queryFn: () => fetchFilteredItemIds(characterFilter),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // 分頁查詢
+  const {
+    data,
+    isLoading: pageLoading,
+    isError: pageError,
+    isFetchingNextPage,
+    fetchNextPage,
+    hasNextPage,
+  } = useInfiniteQuery<ItemsPage, Error, InfiniteData<ItemsPage>, string[], PageCursor | null>({
+    queryKey: ['items', characterFilter, categoryFilter],
+    queryFn: ({ pageParam }) =>
+      fetchItemsPage({
+        itemIds: filteredItemIds ?? null,
+        categoryKey: categoryFilter === 'all' ? null : categoryFilter,
+        cursor: pageParam,
+      }),
+    initialPageParam: null,
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
+    enabled: !idsLoading,
+  });
+
+  const items = useMemo(() => data?.pages.flatMap((p) => p.items) ?? [], [data]);
+  const totalCount = items.length;
+
+  // IntersectionObserver：滾到底觸發下一頁
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { rootMargin: '200px' },
     );
-  }, [rawItems, characterFilter]);
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+
+  // 類別 filter 切換時，捲動 active tab 到可視範圍
+  useEffect(() => {
+    if (!categoriesLoading && locationState?.category && activeCategoryRef.current) {
+      activeCategoryRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'center',
+      });
+    }
+  }, [categoriesLoading]);
+
+  const isInitialLoading = idsLoading || pageLoading;
 
   return (
     <div className='bg-washi text-ink font-mincho min-h-screen'>
@@ -65,7 +113,7 @@ export default function ItemsPage() {
       </div>
 
       {/* 篩選列 */}
-      <div className='sticky top-14 z-20 bg-washi/92 backdrop-blur-sm border-y border-gold/15'>
+      <div className='sticky top-[calc(3.5rem+env(safe-area-inset-top))] z-20 bg-washi/92 backdrop-blur-sm border-y border-gold/15'>
         <div className='max-w-[1200px] mx-auto px-8 py-3 flex flex-col gap-2'>
           {/* 角色篩選 */}
           <div className='flex items-center gap-2'>
@@ -83,7 +131,7 @@ export default function ItemsPage() {
               </button>
             ))}
             <span className='ml-auto text-[0.6rem] text-ink-faint tracking-[0.25em] font-sans'>
-              {itemsLoading ? '—' : `${items.length} 件`}
+              {isInitialLoading ? '—' : `${totalCount} 件`}
             </span>
           </div>
 
@@ -108,6 +156,7 @@ export default function ItemsPage() {
                 {categories.map(({ key, name_tw }) => (
                   <button
                     key={key}
+                    ref={key === categoryFilter ? activeCategoryRef : null}
                     onClick={() => setCategoryFilter(key)}
                     className={`shrink-0 px-3 py-0.5 text-[0.58rem] tracking-[0.2em] border transition-colors duration-150 font-sans cursor-pointer ${
                       categoryFilter === key
@@ -126,18 +175,27 @@ export default function ItemsPage() {
 
       {/* 商品列表 */}
       <div className='px-8 py-10 max-w-[1200px] mx-auto'>
-        {itemsLoading ? (
-          <LoadingState />
-        ) : itemsError ? (
+        {isInitialLoading ? (
+          <div className='grid grid-cols-[repeat(auto-fill,minmax(170px,1fr))] gap-4'>
+            {Array.from({ length: PAGE_SIZE }).map((_, i) => (
+              <ItemCardSkeleton key={i} />
+            ))}
+          </div>
+        ) : pageError ? (
           <ErrorState />
         ) : items.length === 0 ? (
           <EmptyState message='目前還沒有相關的周邊呢…再去其他地方逛逛吧 🦋' />
         ) : (
-          <div className='grid grid-cols-[repeat(auto-fill,minmax(170px,1fr))] gap-4'>
-            {items.map((item) => (
-              <ItemCard key={item.id} item={item} />
-            ))}
-          </div>
+          <>
+            <div className='grid grid-cols-[repeat(auto-fill,minmax(170px,1fr))] gap-4'>
+              {items.map((item) => (
+                <ItemCard key={item.id} item={item} />
+              ))}
+              {isFetchingNextPage &&
+                Array.from({ length: PAGE_SIZE }).map((_, i) => <ItemCardSkeleton key={i} />)}
+            </div>
+            <div ref={sentinelRef} />
+          </>
         )}
       </div>
 

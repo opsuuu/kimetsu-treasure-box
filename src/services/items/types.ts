@@ -31,3 +31,13 @@ export type ItemDetail = Item & {
   categories: Category | null;
   series: Series | null;
 };
+
+export type PageCursor = {
+  displayOrder: number;
+  id: string;
+};
+
+export type ItemsPage = {
+  items: ItemDetail[];
+  nextCursor: PageCursor | null;
+};
