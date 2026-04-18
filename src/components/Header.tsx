@@ -1,14 +1,20 @@
+import { useState } from 'react';
 import { Link } from 'react-router';
 import { Search, Heart, ArrowRight } from 'lucide-react';
 import { ROUTES } from '@/routers/paths';
+import SearchModal from './SearchModal';
 
 interface SiteHeaderProps {
   back?: { to: string; label: string };
 }
 
 export default function SiteHeader({ back }: SiteHeaderProps) {
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+
   return (
-    <header className='sticky top-0 z-50 bg-washi/90 backdrop-blur-sm border-b border-gold/10'>
+    <>
+      <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+      <header className='sticky top-0 z-50 bg-washi/90 backdrop-blur-sm border-b border-gold/10 pt-[env(safe-area-inset-top)]'>
       <div className='max-w-[1200px] mx-auto px-8 h-14 flex items-center justify-between sm:grid sm:grid-cols-3'>
         {/* 左欄：返回按鈕（桌機）/ 空白（手機無返回時） */}
         <div className='hidden sm:block'>
@@ -36,18 +42,18 @@ export default function SiteHeader({ back }: SiteHeaderProps) {
         <div className='flex sm:justify-end items-center gap-5'>
           <button
             aria-label='搜尋'
-            className='text-ink-dim hover:text-ink transition-colors cursor-not-allowed opacity-40'
-            disabled
+            onClick={() => setIsSearchOpen(true)}
+            className='text-ink-dim hover:text-ink transition-colors cursor-pointer'
           >
             <Search size={15} />
           </button>
-          <Link
-            to={ROUTES.FAVORITES}
+          <button
             aria-label='收藏清單'
-            className='text-ink-dim hover:text-ink transition-colors no-underline'
+            className='text-ink-dim cursor-not-allowed opacity-40'
+            disabled
           >
             <Heart size={15} />
-          </Link>
+          </button>
           {/* 返回按鈕（手機版：只顯示 icon，愛心右側） */}
           {back && (
             <Link
@@ -61,5 +67,6 @@ export default function SiteHeader({ back }: SiteHeaderProps) {
         </div>
       </div>
     </header>
+    </>
   );
 }
