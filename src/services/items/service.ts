@@ -53,9 +53,13 @@ export const fetchItemsPage = async ({
   categoryKey?: string | null;
   cursor?: PageCursor | null;
 }): Promise<ItemsPage> => {
+  // categories!inner(*) 使用 INNER JOIN，確保 .eq() 能過濾 items 本身；
+  // 一般 categories(*) 是 LEFT JOIN，filter 只作用在 embed 資料，不過濾 parent rows
+  const categoriesJoin = categoryKey !== null ? 'categories!inner(*)' : 'categories(*)';
+
   let query = supabase
     .from('items')
-    .select('*, item_characters(characters(*)), categories(*), series(*)')
+    .select(`*, item_characters(characters(*)), ${categoriesJoin}, series(*)`)
     .eq('is_active', true)
     .order('display_order', { ascending: true })
     .order('id', { ascending: true })
