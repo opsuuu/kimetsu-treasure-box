@@ -95,6 +95,60 @@ export const fetchItemsPage = async ({
 };
 
 /**
+ * 搜尋商品（cursor pagination）
+ *
+ * buildSearchQuery 內部會呼叫兩次 .or()，產生兩個獨立的 or= URL param。
+ * PostgREST 對多個頂層 filter 條件一律以 AND 組合，實際 SQL 為：
+ *   WHERE (name_jp ILIKE '%q%' OR name_tw ILIKE '%q%')              ← 搜尋條件
+ *     AND (display_order > N OR (display_order = N AND id > X))     ← cursor
+ */
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const buildSearchQuery = (
+  query: any,
+  { searchTerm, cursor }: { searchTerm: string; cursor: PageCursor | null },
+) => {
+  let q = query.or(`name_jp.ilike.%${searchTerm}%,name_tw.ilike.%${searchTerm}%`);
+  if (cursor !== null) {
+    q = q.or(
+      `display_order.gt.${cursor.displayOrder},and(display_order.eq.${cursor.displayOrder},id.gt.${cursor.id})`,
+    );
+  }
+  return q;
+};
+
+export const fetchSearchPage = async ({
+  searchQuery,
+  cursor = null,
+}: {
+  searchQuery: string;
+  cursor?: PageCursor | null;
+}): Promise<ItemsPage> => {
+  const baseQuery = supabase
+    .from('items')
+    .select('*, item_characters(characters(*)), categories(*), series(*)')
+    .eq('is_active', true)
+    .order('display_order', { ascending: true })
+    .order('id', { ascending: true })
+    .limit(PAGE_SIZE + 1);
+
+  const { data, error } = await buildSearchQuery(baseQuery, { searchTerm: searchQuery, cursor });
+
+  if (error) throw error;
+
+  const rows = (data as ItemDetail[]) ?? [];
+  const hasNextPage = rows.length > PAGE_SIZE;
+  const items = hasNextPage ? rows.slice(0, PAGE_SIZE) : rows;
+  const last = items[items.length - 1];
+
+  return {
+    items,
+    nextCursor:
+      hasNextPage && last ? { displayOrder: last.display_order ?? 0, id: last.id } : null,
+  };
+};
+
+/**
  * 取得商品列表（含關聯資料）
  */
 export const fetchItems = async (): Promise<ItemDetail[]> => {
