@@ -4,7 +4,6 @@ import PageFooter from '@/components/PageFooter';
 import { InfoRow, ItemGallery } from './components';
 import { useItemBySlug, useItemImages } from '@/hooks';
 import { characterThemes, defaultCharacterTheme } from '@/constants/characterThemes';
-import { ROUTES } from '@/routers/paths';
 import { ExternalLink } from 'lucide-react';
 import { useMemo } from 'react';
 import { cn } from '@/lib/utils';
@@ -29,7 +28,7 @@ export default function ItemDetailPage() {
 
   return (
     <div className='bg-washi text-ink font-mincho min-h-screen'>
-      <Header back={{ to: ROUTES.ITEMS, label: '返回圖鑑' }} />
+      <Header back={{ label: '返回圖鑑' }} />
 
       {/* 主內容 */}
       <div className='px-8 pt-8 pb-16 max-w-[1200px] mx-auto'>

@@ -1,15 +1,16 @@
 import { useState } from 'react';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { Search, Heart, ArrowRight } from 'lucide-react';
 import { ROUTES } from '@/routers/paths';
 import SearchModal from './SearchModal';
 
 interface SiteHeaderProps {
-  back?: { to: string; label: string };
+  back?: { label: string };
 }
 
 export default function SiteHeader({ back }: SiteHeaderProps) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <>
@@ -19,12 +20,12 @@ export default function SiteHeader({ back }: SiteHeaderProps) {
         {/* 左欄：返回按鈕（桌機）/ 空白（手機無返回時） */}
         <div className='hidden sm:block'>
           {back && (
-            <Link
-              to={back.to}
-              className='inline-flex items-center gap-2 text-[0.65rem] tracking-[0.3em] text-ink-dim hover:text-ink transition-colors no-underline font-sans'
+            <button
+              onClick={() => navigate(-1)}
+              className='inline-flex items-center gap-2 text-[0.65rem] tracking-[0.3em] text-ink-dim hover:text-ink transition-colors font-sans cursor-pointer'
             >
               ← {back.label}
-            </Link>
+            </button>
           )}
         </div>
 
@@ -56,13 +57,13 @@ export default function SiteHeader({ back }: SiteHeaderProps) {
           </button>
           {/* 返回按鈕（手機版：只顯示 icon，愛心右側） */}
           {back && (
-            <Link
-              to={back.to}
+            <button
+              onClick={() => navigate(-1)}
               aria-label={back.label}
-              className='sm:hidden text-ink-dim hover:text-ink transition-colors no-underline'
+              className='sm:hidden text-ink-dim hover:text-ink transition-colors cursor-pointer'
             >
               <ArrowRight size={16} />
-            </Link>
+            </button>
           )}
         </div>
       </div>
