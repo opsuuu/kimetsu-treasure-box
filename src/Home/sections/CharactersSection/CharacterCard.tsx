@@ -76,8 +76,7 @@ export default function CharacterCard({ character }: CharacterCardProps) {
         </p>
 
         <Link
-          to={ROUTES.ITEMS}
-          state={{ character: character.slug }}
+          to={`${ROUTES.ITEMS}?character=${character.slug}`}
           className={cn(
             'border outline outline-gold/18 outline-offset-3 no-underline',
             'px-6 py-[0.6rem] rounded-none text-[0.72rem] tracking-[0.22em] cursor-pointer font-mincho',

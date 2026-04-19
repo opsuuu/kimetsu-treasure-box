@@ -16,8 +16,7 @@ export default function CategorySection() {
         {categories.map(({ key, name_tw, name_en, icon }) => (
           <Link
             key={key}
-            to={ROUTES.ITEMS}
-            state={{ category: key }}
+            to={`${ROUTES.ITEMS}?category=${key}`}
             className='bg-washi border-none px-4 py-8 cursor-pointer text-inherit text-center transition-[background] duration-[0.25s] no-underline block'
           >
             <div className='text-[1.1rem] text-gold-dim mb-[0.7rem]'>{icon}</div>

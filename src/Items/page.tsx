@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { useSearchParams, useLocation } from 'react-router';
+import { useEffect, useRef, useMemo, useCallback } from 'react';
+import { useSearchParams } from 'react-router';
 import { useQuery, useInfiniteQuery, type InfiniteData } from '@tanstack/react-query';
 import { Search, X } from 'lucide-react';
 import { WasujiHeading, LoadingState, ErrorState, EmptyState, Header } from '@/components';
@@ -31,19 +31,25 @@ export default function ItemsPage() {
   const searchQuery = searchParams.get('search') ?? '';
   const isSearchMode = searchQuery.length > 0;
 
-  const location = useLocation();
-  const locationState = location.state as { character?: CharacterFilter; category?: CategoryFilter } | null;
-  const [characterFilter, setCharacterFilter] = useState<CharacterFilter>(locationState?.character ?? 'all');
-  const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>(locationState?.category ?? 'all');
+  const characterFilter = (searchParams.get('character') ?? 'all') as CharacterFilter;
+  const categoryFilter = searchParams.get('category') ?? 'all';
   const activeCategoryRef = useRef<HTMLButtonElement>(null);
 
   const handleCharacterFilter = (key: CharacterFilter) => {
-    setCharacterFilter(key);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      key === 'all' ? next.delete('character') : next.set('character', key);
+      return next;
+    });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleCategoryFilter = (key: CategoryFilter) => {
-    setCategoryFilter(key);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      key === 'all' ? next.delete('category') : next.set('category', key);
+      return next;
+    });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
