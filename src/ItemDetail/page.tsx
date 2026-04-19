@@ -129,6 +129,11 @@ export default function ItemDetailPage() {
                       </a>
                     </InfoRow>
                   )}
+                  {item.note && (
+                    <InfoRow label='備註' align='start'>
+                      {item.note}
+                    </InfoRow>
+                  )}
                 </dl>
               </>
             )}

@@ -20,6 +20,7 @@ export type Item = {
   official_url: string | null;
   specification: string | null;
   material: string | null;
+  note: string | null;
 };
 
 export type ItemDetail = Item & {
