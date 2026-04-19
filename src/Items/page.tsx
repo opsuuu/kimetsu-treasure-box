@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { useSearchParams } from 'react-router';
+import { useSearchParams, useLocation } from 'react-router';
 import { useQuery, useInfiniteQuery, type InfiniteData } from '@tanstack/react-query';
 import { Search, X } from 'lucide-react';
 import { WasujiHeading, LoadingState, ErrorState, EmptyState, Header } from '@/components';
@@ -31,8 +31,10 @@ export default function ItemsPage() {
   const searchQuery = searchParams.get('search') ?? '';
   const isSearchMode = searchQuery.length > 0;
 
-  const [characterFilter, setCharacterFilter] = useState<CharacterFilter>('all');
-  const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('all');
+  const location = useLocation();
+  const locationState = location.state as { character?: CharacterFilter; category?: CategoryFilter } | null;
+  const [characterFilter, setCharacterFilter] = useState<CharacterFilter>(locationState?.character ?? 'all');
+  const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>(locationState?.category ?? 'all');
   const activeCategoryRef = useRef<HTMLButtonElement>(null);
 
   const handleCharacterFilter = (key: CharacterFilter) => {
