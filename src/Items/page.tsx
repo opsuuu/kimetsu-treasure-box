@@ -186,20 +186,22 @@ export default function ItemsPage() {
             <div className='flex flex-col gap-2'>
               {/* 角色篩選 */}
               <div className='flex items-center gap-2'>
-                {CHARACTER_FILTERS.map(({ key, label }) => (
-                  <button
-                    key={key}
-                    onClick={() => handleCharacterFilter(key)}
-                    className={`px-4 py-1 text-[0.68rem] tracking-[0.25em] border transition-colors duration-150 font-mincho cursor-pointer ${
-                      characterFilter === key
-                        ? 'border-gold/55 text-gold bg-[rgba(201,168,76,0.1)]'
-                        : 'border-gold/20 text-ink-dim hover:border-gold/40 hover:text-ink'
-                    }`}
-                  >
-                    {label}
-                  </button>
-                ))}
-                <span className='ml-auto text-[0.6rem] text-ink-faint tracking-[0.25em] font-sans'>
+                <div className='flex items-center gap-2 overflow-x-auto [&::-webkit-scrollbar]:hidden'>
+                  {CHARACTER_FILTERS.map(({ key, label }) => (
+                    <button
+                      key={key}
+                      onClick={() => handleCharacterFilter(key)}
+                      className={`shrink-0 whitespace-nowrap px-4 py-2 sm:py-1 text-[0.8rem] sm:text-[0.68rem] tracking-[0.25em] border transition-colors duration-150 font-mincho cursor-pointer ${
+                        characterFilter === key
+                          ? 'border-gold/55 text-gold bg-[rgba(201,168,76,0.1)]'
+                          : 'border-gold/20 text-ink-dim hover:border-gold/40 hover:text-ink'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                <span className='shrink-0 ml-auto text-[0.6rem] text-ink-faint tracking-[0.25em] font-sans'>
                   {isInitialLoading ? '—' : `${items.length} 件`}
                 </span>
               </div>
@@ -214,7 +216,7 @@ export default function ItemsPage() {
                   <>
                     <button
                       onClick={() => handleCategoryFilter('all')}
-                      className={`shrink-0 px-3 py-0.5 text-[0.58rem] tracking-[0.2em] border transition-colors duration-150 font-sans cursor-pointer ${
+                      className={`shrink-0 px-3 py-1.5 sm:py-0.5 text-[0.75rem] sm:text-[0.58rem] tracking-[0.2em] border transition-colors duration-150 font-mincho cursor-pointer ${
                         categoryFilter === 'all'
                           ? 'border-gold/55 text-gold-dim bg-[rgba(201,168,76,0.08)]'
                           : 'border-gold/15 text-ink-faint hover:border-gold/30 hover:text-ink-dim'
@@ -227,7 +229,7 @@ export default function ItemsPage() {
                         key={key}
                         ref={key === categoryFilter ? activeCategoryRef : null}
                         onClick={() => handleCategoryFilter(key)}
-                        className={`shrink-0 px-3 py-0.5 text-[0.58rem] tracking-[0.2em] border transition-colors duration-150 font-sans cursor-pointer ${
+                        className={`shrink-0 px-3 py-1.5 sm:py-0.5 text-[0.75rem] sm:text-[0.58rem] tracking-[0.2em] border transition-colors duration-150 font-mincho cursor-pointer ${
                           categoryFilter === key
                             ? 'border-gold/55 text-gold-dim bg-[rgba(201,168,76,0.08)]'
                             : 'border-gold/15 text-ink-faint hover:border-gold/30 hover:text-ink-dim'
