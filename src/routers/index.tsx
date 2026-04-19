@@ -1,4 +1,4 @@
-import { createBrowserRouter, createRoutesFromElements, Route } from 'react-router';
+import { createBrowserRouter, createRoutesFromElements, Outlet, Route, ScrollRestoration } from 'react-router';
 import { routeMeta } from './meta';
 import React from 'react';
 import NotFound from '@/NotFound';
@@ -16,9 +16,18 @@ export function lazyWithSuspense<T extends React.ComponentType<any>>(
   return Wrapped;
 }
 
+function RootLayout() {
+  return (
+    <>
+      <ScrollRestoration />
+      <Outlet />
+    </>
+  );
+}
+
 const MainRouter = createBrowserRouter(
   createRoutesFromElements(
-    <>
+    <Route element={<RootLayout />}>
       {
         Object.keys(routeMeta).map((path) => (
           <Route
@@ -29,7 +38,7 @@ const MainRouter = createBrowserRouter(
         )) as any
       }
       <Route path='*' element={<NotFound />} />
-    </>,
+    </Route>,
   ),
 );
 
