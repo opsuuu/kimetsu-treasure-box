@@ -65,7 +65,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
               if (e.key === 'Enter') handleSubmit();
             }}
             placeholder='搜尋日文或中文品名⋯'
-            className='flex-1 bg-transparent text-ink font-mincho text-[0.9rem] tracking-[0.15em] placeholder:text-ink-faint outline-none'
+            className='flex-1 bg-transparent text-ink font-mincho text-[1rem] md:text-[0.9rem] tracking-[0.15em] placeholder:text-ink-faint outline-none'
           />
           {query && (
             <button

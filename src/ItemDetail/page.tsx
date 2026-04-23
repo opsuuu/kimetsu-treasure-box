@@ -21,9 +21,6 @@ export default function ItemDetailPage() {
   if (isError || !item) return <ErrorState />;
 
   const characters = item.item_characters.map((ic) => ic.characters);
-  const characterSlug = characters.length === 1 ? characters[0].slug : '';
-  const theme = characterThemes[characterSlug] ?? defaultCharacterTheme;
-  const characterLabel = characters.map((c) => c.name).join('・');
   const hasExtraInfo = Boolean(item.specification || item.material || item.official_url);
 
   return (
@@ -40,17 +37,21 @@ export default function ItemDetailPage() {
           <div className='flex flex-col gap-6 pt-2 min-w-0'>
             {/* 角色 ＋ 類別 tags */}
             <div className='flex items-center gap-2 flex-wrap'>
-              {characterLabel && (
-                <span
-                  className={cn(
-                    'text-[0.58rem] tracking-[0.25em] px-3 py-1 border font-sans',
-                    theme.cardBorder,
-                    theme.nameCls,
-                  )}
-                >
-                  {characterLabel}
-                </span>
-              )}
+              {characters.map((c) => {
+                const t = characterThemes[c.slug] ?? defaultCharacterTheme;
+                return (
+                  <span
+                    key={c.slug}
+                    className={cn(
+                      'text-[0.58rem] tracking-[0.25em] px-3 py-1 border font-sans',
+                      t.cardBorder,
+                      t.nameCls,
+                    )}
+                  >
+                    {c.name}
+                  </span>
+                );
+              })}
               {item.categories && (
                 <span className='text-[0.58rem] tracking-[0.25em] px-3 py-1 border border-gold/20 text-gold-dim font-sans'>
                   {item.categories.name_tw}
