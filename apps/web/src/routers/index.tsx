@@ -1,4 +1,10 @@
-import { createBrowserRouter, createRoutesFromElements, Outlet, Route, ScrollRestoration } from 'react-router';
+import {
+  createBrowserRouter,
+  createRoutesFromElements,
+  Outlet,
+  Route,
+  ScrollRestoration,
+} from 'react-router';
 import { routeMeta } from './meta';
 import React from 'react';
 import NotFound from '@/NotFound';

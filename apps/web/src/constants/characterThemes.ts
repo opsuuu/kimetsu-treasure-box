@@ -7,8 +7,16 @@ export type CharacterTheme = {
 };
 
 export const KANJI_ORDINALS: Record<number, string> = {
-  1: '壱', 2: '弐', 3: '参', 4: '肆', 5: '伍',
-  6: '陸', 7: '柒', 8: '捌', 9: '玖', 10: '拾',
+  1: '壱',
+  2: '弐',
+  3: '参',
+  4: '肆',
+  5: '伍',
+  6: '陸',
+  7: '柒',
+  8: '捌',
+  9: '玖',
+  10: '拾',
 };
 
 export const defaultCharacterTheme: CharacterTheme = {

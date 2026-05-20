@@ -2,7 +2,11 @@ import { Link } from 'react-router';
 import { cn } from '@/lib/utils';
 import type { Character } from '@/services/characters';
 import { ROUTES } from '@/routers/paths';
-import { characterThemes, defaultCharacterTheme, KANJI_ORDINALS } from '@/constants/characterThemes';
+import {
+  characterThemes,
+  defaultCharacterTheme,
+  KANJI_ORDINALS,
+} from '@/constants/characterThemes';
 import { GiyuDecorations, ShinobuDecorations } from './decorations';
 
 interface CharacterCardProps {
