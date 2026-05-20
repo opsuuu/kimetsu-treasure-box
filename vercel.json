@@ -1,0 +1,5 @@
+{
+  "buildCommand": "turbo run build --filter=@kimetsu/web",
+  "outputDirectory": "apps/web/dist",
+  "installCommand": "pnpm install"
+}
