@@ -6,7 +6,7 @@ import type { Series } from '@/services/series';
 export type Item = Tables<'items'>;
 
 export type ItemDetail = Item & {
-  item_characters: (Tables<'item_characters'> & { characters: Character })[];
+  item_characters: { characters: Character | null }[];
   categories: Category | null;
   series: Series | null;
 };
