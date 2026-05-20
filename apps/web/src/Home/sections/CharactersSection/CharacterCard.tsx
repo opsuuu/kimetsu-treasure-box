@@ -42,7 +42,7 @@ export default function CharacterCard({ character }: CharacterCardProps) {
       {/* image */}
       <img
         src={character.image_url ?? ''}
-        alt={character.name}
+        alt={character.name ?? ''}
         aria-hidden
         className='absolute right-0 bottom-0 h-[90%] w-auto object-contain object-bottom pointer-events-none select-none opacity-30 mask-[linear-gradient(to_right,transparent,black_35%)]'
       />

@@ -20,7 +20,7 @@ export default function ItemDetailPage() {
   if (isLoading) return <LoadingState />;
   if (isError || !item) return <ErrorState />;
 
-  const characters = item.item_characters.map((ic) => ic.characters);
+  const characters = item.item_characters.map((ic) => ic.characters).filter((c) => c !== null);
   const hasExtraInfo = Boolean(item.specification || item.material || item.official_url);
 
   return (

@@ -11,7 +11,8 @@ const accentClsMap: Record<string, string> = {
 export function ItemCard({ item }: { item: ItemDetail }) {
   const seriesName = item.series?.name_tw ?? item.series?.name_jp ?? '';
   const categoryLabel = item.categories?.name_tw ?? '';
-  const slugs = item.item_characters.map((ic) => ic.characters.slug);
+  const characters = item.item_characters.map((ic) => ic.characters).filter((c) => c !== null);
+  const slugs = characters.map((c) => c.slug);
   const accentCls =
     slugs.includes('giyu') && slugs.includes('shinobu')
       ? accentClsMap.both
@@ -20,7 +21,7 @@ export function ItemCard({ item }: { item: ItemDetail }) {
         : slugs.includes('shinobu')
           ? accentClsMap.shinobu
           : 'border-t-gold/50';
-  const characterLabel = item.item_characters.map((ic) => ic.characters.name).join('・');
+  const characterLabel = characters.map((c) => c.name ?? '').join('・');
 
   return (
     <Link
