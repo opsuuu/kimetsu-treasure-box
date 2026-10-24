@@ -32,3 +32,24 @@ export async function uploadItemImage(
 
   return data.url;
 }
+
+export async function deleteItemImage(url: string): Promise<void> {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) throw new Error('登入已失效，請重新登入');
+
+  const res = await fetch('/api/upload', {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${session.access_token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ url }),
+  });
+
+  if (!res.ok) {
+    const data = (await res.json().catch(() => null)) as { error?: string } | null;
+    throw new Error(data?.error || '圖片刪除失敗');
+  }
+}

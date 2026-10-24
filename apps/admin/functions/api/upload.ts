@@ -53,3 +53,40 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   const url = `${env.PUBLIC_R2_URL.replace(/\/$/, '')}/${key}`;
   return Response.json({ url });
 };
+
+/**
+ * 從公開圖片網址還原 R2 object key。
+ * 只接受本 bucket 的公開網址，避免呼叫端直接指定任意 key。
+ */
+function resolveKeyFromUrl(url: string, publicBase: string): string | null {
+  const base = publicBase.replace(/\/$/, '');
+  if (!url.startsWith(`${base}/`)) return null;
+  const key = decodeURIComponent(url.slice(base.length + 1));
+  if (!key || key.includes('..')) return null;
+  return key;
+}
+
+export const onRequestDelete: PagesFunction<Env> = async ({ request, env }) => {
+  if (!(await verifyUser(request, env))) {
+    return Response.json({ error: '登入已失效，請重新登入' }, { status: 401 });
+  }
+
+  const body = (await request.json().catch(() => null)) as { url?: string } | null;
+  if (!body?.url) {
+    return Response.json({ error: '缺少圖片網址' }, { status: 400 });
+  }
+
+  const key = resolveKeyFromUrl(body.url, env.PUBLIC_R2_URL);
+  if (!key) {
+    return Response.json({ error: '圖片網址不合法' }, { status: 400 });
+  }
+
+  try {
+    // R2 delete 對不存在的 key 不會拋錯，重複刪除視為成功
+    await env.BUCKET.delete(key);
+  } catch {
+    return Response.json({ error: '圖片刪除失敗，請稍後再試' }, { status: 500 });
+  }
+
+  return Response.json({ ok: true });
+};
