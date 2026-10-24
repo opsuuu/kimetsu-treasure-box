@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { X, RotateCcw } from "lucide-react";
 import { fetchCategories } from "@/services/categories";
@@ -20,11 +20,13 @@ interface Props {
 
 export function FilterPanel({ open, filters, onApply, onClose }: Props) {
   const [draft, setDraft] = useState<ItemFilters>(filters);
+  const [prevOpen, setPrevOpen] = useState(open);
 
   // 每次開啟 panel 時，從當前已套用的 filters 重新初始化
-  useEffect(() => {
+  if (open !== prevOpen) {
+    setPrevOpen(open);
     if (open) setDraft(filters);
-  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
+  }
 
   const { data: categories = [] } = useQuery({
     queryKey: ["categories"],

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   PointerSensor,
   useSensor,
@@ -14,28 +14,31 @@ interface UseItemsSortProps {
   onReorder: (updates: { id: string; display_order: number }[]) => void;
 }
 
+interface LocalOrder {
+  base: AdminItem[];
+  page: number;
+  items: AdminItem[];
+}
+
 export function useItemsSort({ serverItems, page, onReorder }: UseItemsSortProps) {
-  const [localItems, setLocalItems] = useState<AdminItem[] | null>(null);
+  const [localOrder, setLocalOrder] = useState<LocalOrder | null>(null);
   const sensors = useSensors(useSensor(PointerSensor));
 
-  useEffect(() => {
-    setLocalItems(serverItems);
-  }, [serverItems]);
-
-  useEffect(() => {
-    setLocalItems(null);
-  }, [page]);
+  // 拖曳結果只對當下那份 serverItems 與頁碼有效，伺服器資料更新或換頁就改回伺服器順序
+  const items =
+    localOrder?.base === serverItems && localOrder.page === page
+      ? localOrder.items
+      : serverItems;
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
-    const items = localItems ?? serverItems;
     const oldIndex = items.findIndex((i) => i.id === active.id);
     const newIndex = items.findIndex((i) => i.id === over.id);
     const reordered = arrayMove(items, oldIndex, newIndex);
 
-    setLocalItems(reordered);
+    setLocalOrder({ base: serverItems, page, items: reordered });
 
     const baseOrder = (page - 1) * PAGE_SIZE + 1;
     const updates = reordered.map((item, i) => ({
@@ -47,7 +50,7 @@ export function useItemsSort({ serverItems, page, onReorder }: UseItemsSortProps
   }
 
   return {
-    items: localItems ?? serverItems,
+    items,
     sensors,
     handleDragEnd,
   };
