@@ -11,7 +11,8 @@ import { PAGE_SIZE, type AdminItem } from "@/services/items";
 interface UseItemsSortProps {
   serverItems: AdminItem[];
   page: number;
-  onReorder: (updates: { id: string; display_order: number }[]) => void;
+  disabled: boolean;
+  onReorder: (updates: { id: string; display_order: number }[]) => Promise<void>;
 }
 
 interface LocalOrder {
@@ -20,7 +21,7 @@ interface LocalOrder {
   items: AdminItem[];
 }
 
-export function useItemsSort({ serverItems, page, onReorder }: UseItemsSortProps) {
+export function useItemsSort({ serverItems, page, disabled, onReorder }: UseItemsSortProps) {
   const [localOrder, setLocalOrder] = useState<LocalOrder | null>(null);
   const sensors = useSensors(useSensor(PointerSensor));
 
@@ -32,7 +33,7 @@ export function useItemsSort({ serverItems, page, onReorder }: UseItemsSortProps
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
-    if (!over || active.id === over.id) return;
+    if (disabled || !over || active.id === over.id) return;
 
     const oldIndex = items.findIndex((i) => i.id === active.id);
     const newIndex = items.findIndex((i) => i.id === over.id);
@@ -46,7 +47,8 @@ export function useItemsSort({ serverItems, page, onReorder }: UseItemsSortProps
       display_order: baseOrder + i,
     }));
 
-    onReorder(updates);
+    // 寫入全部失敗時重抓到的資料會沿用同一個參考，不會自動蓋掉本地順序
+    onReorder(updates).catch(() => setLocalOrder(null));
   }
 
   return {

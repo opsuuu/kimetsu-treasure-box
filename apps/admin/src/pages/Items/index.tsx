@@ -29,21 +29,23 @@ export default function ItemsPage() {
     name: string;
   } | null>(null);
 
-  const { query, deleteMutation, toggleMutation, orderMutation } =
-    useAdminItems({ filters, page });
-  const { items, sensors, handleDragEnd } = useItemsSort({
-    serverItems: query.data?.items ?? [],
-    page,
-    onReorder: (updates) => orderMutation.mutate(updates),
-  });
-
-  const total = query.data?.total ?? 0;
-  const totalPages = Math.ceil(total / PAGE_SIZE);
-
   const hasActiveFilters = Object.entries(filters).some(([k, v]) => {
     const def = defaultFilters[k as keyof ItemFilters];
     return Array.isArray(v) ? v.length > 0 : v !== def;
   });
+
+  const { query, deleteMutation, toggleMutation, orderMutation } =
+    useAdminItems({ filters, page });
+  // display_order 依頁碼連號重編，篩選後的結果不連續，拖曳會和未顯示的商品撞號
+  const { items, sensors, handleDragEnd } = useItemsSort({
+    serverItems: query.data?.items ?? [],
+    page,
+    disabled: hasActiveFilters,
+    onReorder: orderMutation.mutateAsync,
+  });
+
+  const total = query.data?.total ?? 0;
+  const totalPages = Math.ceil(total / PAGE_SIZE);
 
   function handleApply(newFilters: ItemFilters) {
     setFilters(newFilters);
@@ -117,6 +119,13 @@ export default function ItemsPage() {
         </Button>
       </div>
 
+      {hasActiveFilters && (
+        <p className="mb-2 text-xs text-gray-400">篩選中無法拖曳排序，清除篩選後即可調整順序</p>
+      )}
+      {orderMutation.isError && (
+        <p className="mb-2 text-xs text-red-500">排序儲存失敗，已還原為目前伺服器上的順序</p>
+      )}
+
       {/* Table */}
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
         {query.isLoading ? (
@@ -129,6 +138,7 @@ export default function ItemsPage() {
           <ItemsTable
             items={items}
             sensors={sensors}
+            sortDisabled={hasActiveFilters}
             onDragEnd={handleDragEnd}
             onDelete={(id, name) => setDeleteTarget({ id, name })}
             onToggle={(id, isActive) => toggleMutation.mutate({ id, isActive })}

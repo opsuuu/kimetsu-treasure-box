@@ -220,11 +220,13 @@ export async function createItemImages(
 export async function updateItemsOrder(
   updates: { id: string; display_order: number }[],
 ): Promise<void> {
-  await Promise.all(
+  const results = await Promise.all(
     updates.map(({ id, display_order }) =>
       supabase.from('items').update({ display_order }).eq('id', id),
     ),
   );
+  const failed = results.find((r) => r.error);
+  if (failed?.error) throw failed.error;
 }
 
 export async function deleteItem(id: string): Promise<void> {

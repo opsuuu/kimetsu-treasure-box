@@ -36,7 +36,8 @@ export function useAdminItems({ filters, page }: UseAdminItemsProps) {
 
   const orderMutation = useMutation({
     mutationFn: updateItemsOrder,
-    onSuccess: invalidate,
+    // 失敗時可能已有部分寫入，一律重抓
+    onSettled: invalidate,
   });
 
   return { query, deleteMutation, toggleMutation, orderMutation };

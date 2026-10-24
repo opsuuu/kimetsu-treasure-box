@@ -5,7 +5,10 @@ import {
   type SensorDescriptor,
   type SensorOptions,
 } from "@dnd-kit/core";
-import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import { Pencil, Trash2 } from "lucide-react";
 import { SortableRow } from "@/components/SortableRow";
 import { Button } from "@/components/ui/button";
@@ -18,39 +21,55 @@ import type { AdminItem } from "@/services/items";
 interface Props {
   items: AdminItem[];
   sensors: SensorDescriptor<SensorOptions>[];
+  sortDisabled: boolean;
   onDragEnd: (event: DragEndEvent) => void;
   onDelete: (id: string, name: string) => void;
   onToggle: (id: string, isActive: boolean) => void;
   isTogglePending: boolean;
 }
 
-export function ItemsTable({ items, sensors, onDragEnd, onDelete, onToggle, isTogglePending }: Props) {
+export function ItemsTable({
+  items,
+  sensors,
+  sortDisabled,
+  onDragEnd,
+  onDelete,
+  onToggle,
+  isTogglePending,
+}: Props) {
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b border-gray-100 bg-gray-50 text-left text-xs font-medium text-gray-500">
-            <th className="px-2 py-3 w-8" />
-            {COLUMNS.map((col) => (
-              <th
-                key={col.key}
-                className={cn(
-                  "px-4 py-3",
-                  col.width,
-                  col.align === 'center' && "text-center",
-                  col.className,
-                )}
-              >
-                {col.label}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
-          <SortableContext items={items.map((i) => i.id)} strategy={verticalListSortingStrategy}>
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragEnd={onDragEnd}
+    >
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-gray-100 bg-gray-50 text-left text-xs font-medium text-gray-500">
+              <th className="px-2 py-3 w-8" />
+              {COLUMNS.map((col) => (
+                <th
+                  key={col.key}
+                  className={cn(
+                    "px-4 py-3",
+                    col.width,
+                    col.align === "center" && "text-center",
+                    col.className,
+                  )}
+                >
+                  {col.label}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <SortableContext
+            items={items.map((i) => i.id)}
+            strategy={verticalListSortingStrategy}
+          >
             <tbody className="divide-y divide-gray-100">
               {items.map((item) => (
-                <SortableRow key={item.id} id={item.id}>
+                <SortableRow key={item.id} id={item.id} disabled={sortDisabled}>
                   {() => (
                     <>
                       {/* 封面 */}
@@ -68,9 +87,13 @@ export function ItemsTable({ items, sensors, onDragEnd, onDelete, onToggle, isTo
 
                       {/* 名稱 */}
                       <td className="px-4 py-3">
-                        <p className="font-medium text-gray-900 line-clamp-1">{item.name_jp}</p>
+                        <p className="font-medium text-gray-900 line-clamp-1">
+                          {item.name_jp}
+                        </p>
                         {item.name_tw && (
-                          <p className="text-xs text-gray-400 line-clamp-1">{item.name_tw}</p>
+                          <p className="text-xs text-gray-400 line-clamp-1">
+                            {item.name_tw}
+                          </p>
                         )}
                       </td>
 
@@ -103,7 +126,9 @@ export function ItemsTable({ items, sensors, onDragEnd, onDelete, onToggle, isTo
 
                       {/* 售價 */}
                       <td className="px-4 py-3 text-gray-600">
-                        {item.price != null ? `¥${item.price.toLocaleString()}` : "—"}
+                        {item.price != null
+                          ? `¥${item.price.toLocaleString()}`
+                          : "—"}
                       </td>
 
                       {/* 發售日 */}
@@ -152,8 +177,8 @@ export function ItemsTable({ items, sensors, onDragEnd, onDelete, onToggle, isTo
               ))}
             </tbody>
           </SortableContext>
-        </DndContext>
-      </table>
-    </div>
+        </table>
+      </div>
+    </DndContext>
   );
 }
