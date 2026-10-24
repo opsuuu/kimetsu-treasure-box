@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router";
 import { Plus, Search, Trash2, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAdminItems, useItemsSort } from "@/hooks";
@@ -19,6 +20,7 @@ import { cn } from "@/lib/cn";
 import { PAGE_SIZE, defaultFilters, type ItemFilters } from "@/services/items";
 
 export default function ItemsPage() {
+  const navigate = useNavigate();
   const [filters, setFilters] = useState<ItemFilters>(defaultFilters);
   const [page, setPage] = useState(1);
   const [panelOpen, setPanelOpen] = useState(false);
@@ -62,7 +64,10 @@ export default function ItemsPage() {
           <h1 className="text-xl font-bold text-gray-900">週邊管理</h1>
           <p className="mt-0.5 text-sm text-gray-500">共 {total} 件週邊</p>
         </div>
-        <Button className="bg-linear-to-r from-giyu to-shinobu hover:from-[#336a91] hover:to-[#6a4f91] text-white border-transparent">
+        <Button
+          className="bg-linear-to-r from-giyu to-shinobu hover:from-[#336a91] hover:to-[#6a4f91] text-white border-transparent"
+          onClick={() => navigate('/items/new')}
+        >
           <Plus size={16} />
           新增週邊
         </Button>

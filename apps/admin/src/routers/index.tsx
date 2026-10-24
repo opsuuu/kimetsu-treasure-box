@@ -2,32 +2,20 @@ import { createBrowserRouter, Navigate } from 'react-router';
 import React from 'react';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { AdminLayout } from '@/components/AdminLayout';
+import { PageSuspense } from '@/components/PageSuspense';
 
 const LoginPage = React.lazy(() => import('@/pages/Login'));
 const DashboardPage = React.lazy(() => import('@/pages/Dashboard'));
 const ItemsPage = React.lazy(() => import('@/pages/Items'));
-
-function Suspense({ children }: { children: React.ReactNode }) {
-  return (
-    <React.Suspense
-      fallback={
-        <div className="flex h-screen items-center justify-center text-sm text-gray-400">
-          載入中...
-        </div>
-      }
-    >
-      {children}
-    </React.Suspense>
-  );
-}
+const ItemFormPage = React.lazy(() => import('@/pages/ItemForm'));
 
 const router = createBrowserRouter([
   {
     path: '/login',
     element: (
-      <Suspense>
+      <PageSuspense>
         <LoginPage />
-      </Suspense>
+      </PageSuspense>
     ),
   },
   {
@@ -43,18 +31,31 @@ const router = createBrowserRouter([
           {
             path: '/dashboard',
             element: (
-              <Suspense>
+              <PageSuspense>
                 <DashboardPage />
-              </Suspense>
+              </PageSuspense>
             ),
           },
           {
             path: '/items',
             element: (
-              <Suspense>
+              <PageSuspense>
                 <ItemsPage />
-              </Suspense>
+              </PageSuspense>
             ),
+          },
+          {
+            path: '/items/new',
+            element: (
+              <PageSuspense>
+                <ItemFormPage />
+              </PageSuspense>
+            ),
+          },
+          {
+            // 編輯頁尚未實作；新增成功後會導來這裡，先退回列表避免落到 404
+            path: '/items/:id/edit',
+            element: <Navigate to="/items" replace />,
           },
         ],
       },
