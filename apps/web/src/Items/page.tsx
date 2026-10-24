@@ -143,7 +143,7 @@ export default function ItemsPage() {
         inline: 'center',
       });
     }
-  }, [categoriesLoading]);
+  }, [categoriesLoading, categoryFilter]);
 
   return (
     <div className='bg-washi text-ink font-mincho min-h-screen'>
