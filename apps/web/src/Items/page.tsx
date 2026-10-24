@@ -115,7 +115,9 @@ export default function ItemsPage() {
 
   // 用 ref 持有最新的 callback
   const intersectRef = useRef({ fetchNextPage, hasNextPage, isFetchingNextPage });
-  intersectRef.current = { fetchNextPage, hasNextPage, isFetchingNextPage };
+  useEffect(() => {
+    intersectRef.current = { fetchNextPage, hasNextPage, isFetchingNextPage };
+  });
 
   const sentinelRef = useCallback((node: HTMLDivElement | null) => {
     if (!node) return;
@@ -141,7 +143,7 @@ export default function ItemsPage() {
         inline: 'center',
       });
     }
-  }, [categoriesLoading]);
+  }, [categoriesLoading, categoryFilter]);
 
   return (
     <div className='bg-washi text-ink font-mincho min-h-screen'>

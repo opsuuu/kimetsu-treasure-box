@@ -21,7 +21,7 @@ export default function WisteriaLeft() {
         fill='none'
         opacity='0.4'
       />
-      {branchlets.map(([_bx, by, len], ci) => {
+      {branchlets.map(([, by, len], ci) => {
         const count = Math.floor(len / 9);
         const branchEndX = 18 + (ci % 3) * 6;
         return (

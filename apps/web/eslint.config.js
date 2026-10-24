@@ -33,6 +33,9 @@ export default defineConfig([
       'react-hooks/exhaustive-deps': 'error',
       'prefer-const': 'off',
       'no-undef': 'off',
+      // 和風排版刻意在 JSX 文字裡使用全形空白
+      'no-irregular-whitespace': ['error', { skipJSXText: true }],
+      '@typescript-eslint/no-unused-expressions': ['error', { allowTernary: true }],
     },
     linterOptions: {
       reportUnusedDisableDirectives: true,
@@ -41,6 +44,13 @@ export default defineConfig([
       react: {
         version: 'detect',
       },
+    },
+  },
+  // shadcn 元件慣例會一起匯出 variants 等非元件值
+  {
+    files: ['src/components/ui/**/*.tsx'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
     },
   },
 ]);
