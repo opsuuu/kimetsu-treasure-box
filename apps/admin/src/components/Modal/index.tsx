@@ -2,6 +2,7 @@ import { type ReactNode } from "react";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogFooter,
@@ -39,7 +40,8 @@ export function Modal({
 }: ModalProps) {
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent>
+      {/* 沒有內文時要明確傳 undefined，Radix 才不會警告缺少 Description */}
+      <DialogContent {...(!children && { "aria-describedby": undefined })}>
         <DialogHeader>
           <div className="flex items-center gap-3">
             {icon && (
@@ -56,9 +58,7 @@ export function Modal({
           </div>
         </DialogHeader>
 
-        {children && (
-          <p className="text-sm text-muted-foreground">{children}</p>
-        )}
+        {children && <DialogDescription>{children}</DialogDescription>}
 
         {footer && <DialogFooter>{footer}</DialogFooter>}
       </DialogContent>
