@@ -103,9 +103,8 @@ export const fetchItemsPage = async ({
  *     AND (display_order > N OR (display_order = N AND id > X))     ← cursor
  */
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const buildSearchQuery = (
-  query: any,
+const buildSearchQuery = <Q extends { or(filters: string): Q }>(
+  query: Q,
   { searchTerm, cursor }: { searchTerm: string; cursor: PageCursor | null },
 ) => {
   let q = query.or(`name_jp.ilike.%${searchTerm}%,name_tw.ilike.%${searchTerm}%`);
