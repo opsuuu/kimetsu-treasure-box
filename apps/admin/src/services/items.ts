@@ -204,54 +204,49 @@ export async function createItemImages(
   if (error) throw error;
 }
 
+export type ReleaseDateItem = Pick<
+  Tables<'items'>,
+  'id' | 'name_jp' | 'name_tw' | 'image_cover_url' | 'is_active' | 'price'
+> & {
+  categories: Pick<Tables<'categories'>, 'name_tw'> | null;
+  series: Pick<Tables<'series'>, 'name_tw' | 'name_jp'> | null;
+  item_characters: {
+    characters: Pick<Tables<'characters'>, 'name' | 'slug'> | null;
+  }[];
+};
+
 export interface ReleaseDateGroup {
   /** null 代表未填發售日 */
   releaseDate: string | null;
-  count: number;
+  /** 依前台的同日順序排列，包含下架商品 */
+  items: ReleaseDateItem[];
 }
 
-/** 發售日由新到舊，未填發售日排在最後 */
+/**
+ * 全部商品依前台順序分組：發售日由新到舊、未填發售日排在最後，同一天依 display_order。
+ * 一次抓回全部商品，切換日期和搜尋都在前端處理；商品多到拖慢載入時，要改成分頁或伺服器端搜尋。
+ */
 export async function fetchReleaseDateGroups(): Promise<ReleaseDateGroup[]> {
-  const { data, error } = await supabase.from('items').select('release_date');
-  if (error) throw error;
-
-  const counts = new Map<string | null, number>();
-  for (const { release_date } of data ?? []) {
-    counts.set(release_date, (counts.get(release_date) ?? 0) + 1);
-  }
-
-  return [...counts]
-    .map(([releaseDate, count]) => ({ releaseDate, count }))
-    .sort((a, b) => {
-      if (a.releaseDate === b.releaseDate) return 0;
-      if (a.releaseDate === null) return 1;
-      if (b.releaseDate === null) return -1;
-      return a.releaseDate < b.releaseDate ? 1 : -1;
-    });
-}
-
-export type ReleaseDateItem = Pick<
-  Tables<'items'>,
-  'id' | 'name_jp' | 'name_tw' | 'image_cover_url' | 'is_active'
->;
-
-/** 依前台的同日順序排列，包含下架商品 */
-export async function fetchItemsByReleaseDate(
-  releaseDate: string | null,
-): Promise<ReleaseDateItem[]> {
-  let query = supabase
+  const { data, error } = await supabase
     .from('items')
-    .select('id, name_jp, name_tw, image_cover_url, is_active')
+    .select(
+      'id, name_jp, name_tw, image_cover_url, is_active, price, release_date, categories(name_tw), series(name_tw, name_jp), item_characters(characters(name, slug))',
+    )
+    .order('release_date', { ascending: false, nullsFirst: false })
     .order('display_order', { ascending: true })
     .order('id', { ascending: true });
-
-  query = releaseDate === null
-    ? query.is('release_date', null)
-    : query.eq('release_date', releaseDate);
-
-  const { data, error } = await query;
   if (error) throw error;
-  return data ?? [];
+
+  const groups: ReleaseDateGroup[] = [];
+  for (const { release_date, ...item } of data ?? []) {
+    const last = groups[groups.length - 1];
+    if (last && last.releaseDate === release_date) {
+      last.items.push(item);
+    } else {
+      groups.push({ releaseDate: release_date, items: [item] });
+    }
+  }
+  return groups;
 }
 
 /** ids 必須是同一個發售日的整組商品，DB 端會拒絕不完整或過期的資料 */

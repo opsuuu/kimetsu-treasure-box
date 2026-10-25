@@ -1,29 +1,43 @@
+import { useEffect, useState } from "react";
 import { DndContext, closestCenter } from "@dnd-kit/core";
-import {
-  SortableContext,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
+import { SortableContext, rectSortingStrategy } from "@dnd-kit/sortable";
 import { AlertCircle } from "lucide-react";
 import { useReleaseDateOrder } from "@/hooks";
-import { SortableRow } from "@/components/SortableRow";
-import { TableSkeleton } from "@/components/TableSkeleton";
-import { cn } from "@/lib/cn";
+import { OrderCard } from "./components/OrderCard";
+import { ReleaseDateList } from "./components/ReleaseDateList";
+import { isItemHit, releaseDateLabel, toTokens } from "./search";
 
-const NO_RELEASE_DATE_LABEL = "未填發售日";
+const JUST_MOVED_MS = 1400;
 
 export default function FrontOrderPage() {
   const {
     groups,
     isGroupsLoading,
+    isGroupsError,
     releaseDate,
     selectReleaseDate,
     items,
-    isItemsLoading,
+    positionOf,
     sensors,
+    handleDragStart,
+    handleDragOver,
     handleDragEnd,
+    handleDragCancel,
+    moveTo,
     isSaving,
     isStale,
   } = useReleaseDateOrder();
+  const [query, setQuery] = useState("");
+  const [justMovedId, setJustMovedId] = useState<string | null>(null);
+  const tokens = toTokens(query);
+
+  useEffect(() => {
+    if (!justMovedId) return;
+    const timer = setTimeout(() => setJustMovedId(null), JUST_MOVED_MS);
+    return () => clearTimeout(timer);
+  }, [justMovedId]);
+
+  const groupIndex = groups.findIndex((g) => g.releaseDate === releaseDate);
 
   return (
     <div>
@@ -35,109 +49,92 @@ export default function FrontOrderPage() {
         </p>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[220px_minmax(0,1fr)]">
-        {/* 發售日 */}
-        <nav className="max-h-60 overflow-y-auto rounded-xl border border-gray-200 bg-white p-2 lg:max-h-[calc(100vh-12rem)]">
-          {isGroupsLoading ? (
-            <p className="px-3 py-2 text-sm text-gray-400">載入中...</p>
-          ) : groups.length === 0 ? (
-            <p className="px-3 py-2 text-sm text-gray-400">尚無週邊</p>
-          ) : (
-            groups.map((group) => (
-              <button
-                key={group.releaseDate ?? "none"}
-                type="button"
-                onClick={() => selectReleaseDate(group.releaseDate)}
-                className={cn(
-                  "flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition-colors",
-                  group.releaseDate === releaseDate
-                    ? "bg-linear-to-r from-giyu/10 to-shinobu/10 font-medium text-giyu"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900",
-                )}
-              >
-                <span>{group.releaseDate ?? NO_RELEASE_DATE_LABEL}</span>
-                <span className="text-xs text-gray-400">{group.count}</span>
-              </button>
-            ))
-          )}
-        </nav>
+      <div className="grid items-start gap-5 lg:grid-cols-[220px_minmax(0,1fr)]">
+        <ReleaseDateList
+          groups={groups}
+          isLoading={isGroupsLoading}
+          isError={isGroupsError}
+          selected={releaseDate}
+          onSelect={selectReleaseDate}
+          query={query}
+          onQueryChange={setQuery}
+          tokens={tokens}
+        />
 
-        {/* 當天的週邊 */}
         <div>
           {isStale && (
             <div className="mb-3 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
               <AlertCircle size={16} className="mt-0.5 shrink-0" />
-              <span>資料已變動，已重新載入這一組，請再拖曳一次。</span>
+              <span>資料已變動，已重新載入這一組，請再操作一次。</span>
             </div>
           )}
           <p className="mb-2 text-xs text-gray-400">
-            {isSaving ? "儲存中..." : "拖曳左側把手調整順序，放開後自動儲存"}
+            {isSaving
+              ? "儲存中..."
+              : "拖曳卡片調整順序，拖到畫面上下緣會自動捲動；長距離移動可以點號碼直接輸入順位"}
           </p>
 
-          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
-            {isGroupsLoading || isItemsLoading ? (
-              <TableSkeleton rows={5} cols={3} />
+          <div className="rounded-xl border border-gray-200 bg-white px-6 pb-6">
+            <div className="-mx-6 mb-6 flex items-center justify-between border-b border-gray-200 px-6 py-3 text-xs">
+              <span className="font-semibold text-gray-900">前台預覽</span>
+              {groupIndex >= 0 && (
+                <span className="text-gray-400">
+                  {releaseDateLabel(releaseDate ?? null)} · 第 {groupIndex + 1} / {groups.length} 組
+                </span>
+              )}
+            </div>
+
+            {isGroupsLoading ? (
+              <div className="flex h-40 items-center justify-center text-sm text-gray-400">
+                載入中...
+              </div>
             ) : items.length === 0 ? (
               <div className="flex h-40 items-center justify-center text-sm text-gray-400">
-                尚無週邊
+                {isGroupsError ? "載入失敗，請重新整理頁面" : "尚無週邊"}
               </div>
             ) : (
-              <DndContext
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragEnd={handleDragEnd}
-              >
-                <table className="w-full text-sm">
+              <div className="relative mt-2 rounded-xl border border-giyu/20 bg-linear-to-br from-giyu/5 to-shinobu/5 px-4.5 pt-6 pb-4.5">
+                <span className="absolute -top-2.5 left-3.5 flex items-baseline gap-2 rounded-full border border-giyu/25 bg-white px-2.5 py-0.5 text-xs font-semibold text-giyu">
+                  {releaseDateLabel(releaseDate ?? null)}
+                  <small className="text-[11px] font-normal text-gray-400">
+                    {items.length} 件
+                  </small>
+                </span>
+
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  autoScroll={{ threshold: { x: 0, y: 0.15 }, acceleration: 15 }}
+                  onDragStart={handleDragStart}
+                  onDragOver={handleDragOver}
+                  onDragEnd={handleDragEnd}
+                  onDragCancel={handleDragCancel}
+                >
                   <SortableContext
                     items={items.map((i) => i.id)}
-                    strategy={verticalListSortingStrategy}
+                    strategy={rectSortingStrategy}
                   >
-                    <tbody className="divide-y divide-gray-100">
+                    <div className="grid grid-cols-[repeat(auto-fill,minmax(170px,1fr))] gap-4">
                       {items.map((item) => (
-                        <SortableRow key={item.id} id={item.id} disabled={isSaving}>
-                          {() => (
-                            <>
-                              {/* 封面 */}
-                              <td className="w-20 px-4 py-3">
-                                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-gray-100 bg-white p-1">
-                                  {item.image_cover_url && (
-                                    <img
-                                      src={item.image_cover_url}
-                                      alt={item.name_jp}
-                                      className="h-full w-full object-contain"
-                                    />
-                                  )}
-                                </div>
-                              </td>
-
-                              {/* 名稱 */}
-                              <td className="px-4 py-3">
-                                <p className="font-medium text-gray-900 line-clamp-1">
-                                  {item.name_jp}
-                                </p>
-                                {item.name_tw && (
-                                  <p className="text-xs text-gray-400 line-clamp-1">
-                                    {item.name_tw}
-                                  </p>
-                                )}
-                              </td>
-
-                              {/* 狀態 */}
-                              <td className="w-20 px-4 py-3 text-center">
-                                {!item.is_active && (
-                                  <span className="inline-flex items-center rounded-md border border-gray-200 bg-gray-50 px-2 py-1 text-[11px] font-medium text-gray-500">
-                                    已下架
-                                  </span>
-                                )}
-                              </td>
-                            </>
-                          )}
-                        </SortableRow>
+                        <OrderCard
+                          key={item.id}
+                          item={item}
+                          position={positionOf(item.id)}
+                          total={items.length}
+                          disabled={isSaving}
+                          isHit={isItemHit(item, releaseDate ?? null, tokens)}
+                          tokens={tokens}
+                          isJustMoved={item.id === justMovedId}
+                          onMoveTo={(position) => {
+                            moveTo(item.id, position);
+                            setJustMovedId(item.id);
+                          }}
+                        />
                       ))}
-                    </tbody>
+                    </div>
                   </SortableContext>
-                </table>
-              </DndContext>
+                </DndContext>
+              </div>
             )}
           </div>
         </div>
