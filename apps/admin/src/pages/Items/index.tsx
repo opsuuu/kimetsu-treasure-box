@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import { Plus, Search, Trash2, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useAdminItems, useItemsSort } from "@/hooks";
+import { useAdminItems } from "@/hooks";
 import { FilterPanel } from "@/components/FilterPanel";
 import { ItemsTable } from "@/components/ItemsTable";
 import { TableSkeleton } from "@/components/TableSkeleton";
@@ -19,9 +19,12 @@ import {
 import { cn } from "@/lib/cn";
 import { PAGE_SIZE, defaultFilters, type ItemFilters } from "@/services/items";
 
+// 存在 module 裡，離開列表（例如新增、編輯商品）再回來時保留篩選；頁碼是元件 state，回來會是第 1 頁
+let lastFilters: ItemFilters = defaultFilters;
+
 export default function ItemsPage() {
   const navigate = useNavigate();
-  const [filters, setFilters] = useState<ItemFilters>(defaultFilters);
+  const [filters, setFilters] = useState<ItemFilters>(() => lastFilters);
   const [page, setPage] = useState(1);
   const [panelOpen, setPanelOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<{
@@ -34,20 +37,17 @@ export default function ItemsPage() {
     return Array.isArray(v) ? v.length > 0 : v !== def;
   });
 
-  const { query, deleteMutation, toggleMutation, orderMutation } =
-    useAdminItems({ filters, page });
-  // display_order 依頁碼連號重編，篩選後的結果不連續，拖曳會和未顯示的商品撞號
-  const { items, sensors, handleDragEnd } = useItemsSort({
-    serverItems: query.data?.items ?? [],
+  const { query, deleteMutation, toggleMutation } = useAdminItems({
+    filters,
     page,
-    disabled: hasActiveFilters,
-    onReorder: orderMutation.mutateAsync,
   });
 
+  const items = query.data?.items ?? [];
   const total = query.data?.total ?? 0;
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
   function handleApply(newFilters: ItemFilters) {
+    lastFilters = newFilters;
     setFilters(newFilters);
     setPage(1);
   }
@@ -119,13 +119,6 @@ export default function ItemsPage() {
         </Button>
       </div>
 
-      {hasActiveFilters && (
-        <p className="mb-2 text-xs text-gray-400">篩選中無法拖曳排序，清除篩選後即可調整順序</p>
-      )}
-      {orderMutation.isError && (
-        <p className="mb-2 text-xs text-red-500">排序儲存失敗，已還原為目前伺服器上的順序</p>
-      )}
-
       {/* Table */}
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
         {query.isLoading ? (
@@ -137,9 +130,6 @@ export default function ItemsPage() {
         ) : (
           <ItemsTable
             items={items}
-            sensors={sensors}
-            sortDisabled={hasActiveFilters}
-            onDragEnd={handleDragEnd}
             onDelete={(id, name) => setDeleteTarget({ id, name })}
             onToggle={(id, isActive) => toggleMutation.mutate({ id, isActive })}
             isTogglePending={toggleMutation.isPending}

@@ -14,7 +14,6 @@ export const COLUMNS: Column[] = [
   { key: 'characters', label: '角色',    width: 'w-36', className: 'hidden lg:table-cell' },
   { key: 'price',      label: '售價',    width: 'w-24' },
   { key: 'date',       label: '發售日',  width: 'w-28', className: 'hidden md:table-cell' },
-  { key: 'order',      label: '排序',    width: 'w-16', align: 'center', className: 'hidden lg:table-cell' },
   { key: 'status',     label: '狀態',    width: 'w-20', align: 'center' },
   { key: 'actions',    label: '操作',    width: 'w-24', align: 'center' },
 ];

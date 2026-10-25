@@ -50,7 +50,6 @@ export const itemFormSchema = z.object({
     ),
   note: z.string(),
   is_active: z.boolean(),
-  display_order: z.string(),
 });
 
 export type ItemFormInput = z.input<typeof itemFormSchema>;
@@ -73,7 +72,6 @@ export const itemFormDefaults: ItemFormInput = {
   official_url: "",
   note: "",
   is_active: true,
-  display_order: "",
 };
 
 export type ItemFormControl = Control<ItemFormInput, unknown, ItemFormOutput>;

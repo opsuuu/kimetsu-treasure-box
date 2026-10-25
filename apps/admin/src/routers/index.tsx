@@ -53,7 +53,7 @@ const router = createBrowserRouter([
             ),
           },
           {
-            // 編輯頁尚未實作；新增成功後會導來這裡，先退回列表避免落到 404
+            // 編輯頁尚未實作，先退回列表避免落到 404
             path: '/items/:id/edit',
             element: <Navigate to="/items" replace />,
           },

@@ -221,28 +221,6 @@ export function FilterPanel({ open, filters, onApply, onClose }: Props) {
             </div>
           </FilterSection>
 
-          {/* 排序區間 */}
-          <FilterSection title="排序區間">
-            <div className="flex items-center gap-2">
-              <Input
-                type="number"
-                placeholder="從"
-                min={0}
-                value={draft.displayOrderFrom}
-                onChange={(e) => updateFilter("displayOrderFrom", e.target.value)}
-                className="bg-gray-50 focus-visible:border-giyu focus-visible:ring-giyu/20"
-              />
-              <span className="text-gray-400 text-sm">–</span>
-              <Input
-                type="number"
-                placeholder="到"
-                min={0}
-                value={draft.displayOrderTo}
-                onChange={(e) => updateFilter("displayOrderTo", e.target.value)}
-                className="bg-gray-50 focus-visible:border-giyu focus-visible:ring-giyu/20"
-              />
-            </div>
-          </FilterSection>
         </div>
 
         {/* Footer */}

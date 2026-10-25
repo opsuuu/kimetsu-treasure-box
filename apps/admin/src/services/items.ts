@@ -23,8 +23,6 @@ export interface ItemFilters {
   characterSlugs: string[];
   releaseDateFrom: string;
   releaseDateTo: string;
-  displayOrderFrom: string;
-  displayOrderTo: string;
   isActive: 'all' | 'active' | 'inactive';
   priceFrom: string;
   priceTo: string;
@@ -37,8 +35,6 @@ export const defaultFilters: ItemFilters = {
   characterSlugs: [],
   releaseDateFrom: '',
   releaseDateTo: '',
-  displayOrderFrom: '',
-  displayOrderTo: '',
   isActive: 'all',
   priceFrom: '',
   priceTo: '',
@@ -69,8 +65,8 @@ export async function fetchAdminItems(
   let query = supabase
     .from('items')
     .select(`*, ${categoriesJoin}, ${seriesJoin}, ${characterJoin}`, { count: 'exact' })
-    .order('display_order', { ascending: true })
-    .order('created_at', { ascending: false })
+    .order('updated_at', { ascending: false })
+    .order('id', { ascending: true })
     .range(from, to);
 
   if (filters.name.trim()) {
@@ -102,12 +98,6 @@ export async function fetchAdminItems(
   if (filters.releaseDateTo) {
     query = query.lte('release_date', filters.releaseDateTo);
   }
-  if (filters.displayOrderFrom) {
-    query = query.gte('display_order', Number(filters.displayOrderFrom));
-  }
-  if (filters.displayOrderTo) {
-    query = query.lte('display_order', Number(filters.displayOrderTo));
-  }
 
   const { data, error, count } = await query;
   if (error) throw error;
@@ -126,7 +116,6 @@ export interface ItemFormValues {
   character_ids: string[];
   price: string;
   release_date: string;
-  display_order: string;
   is_active: boolean;
   official_url: string;
   description: string;
@@ -173,8 +162,6 @@ export async function createItem(
       series_id: rest.series_id || null,
       price: rest.price ? Number(rest.price) : null,
       release_date: rest.release_date || null,
-      // 留空時整個欄位不送出，交由 DB 端補上排序值，避免多人同時新增撞號
-      ...(rest.display_order ? { display_order: Number(rest.display_order) } : {}),
       is_active: rest.is_active,
       official_url: rest.official_url || null,
       description: rest.description || null,
@@ -215,18 +202,6 @@ export async function createItemImages(
     })),
   );
   if (error) throw error;
-}
-
-export async function updateItemsOrder(
-  updates: { id: string; display_order: number }[],
-): Promise<void> {
-  const results = await Promise.all(
-    updates.map(({ id, display_order }) =>
-      supabase.from('items').update({ display_order }).eq('id', id),
-    ),
-  );
-  const failed = results.find((r) => r.error);
-  if (failed?.error) throw failed.error;
 }
 
 export async function deleteItem(id: string): Promise<void> {

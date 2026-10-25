@@ -1,9 +1,8 @@
-import { Controller, type UseFormRegister } from "react-hook-form";
+import { Controller } from "react-hook-form";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/cn";
 import { Field } from "./Field";
-import type { ItemFormControl, ItemFormInput } from "./schema";
+import type { ItemFormControl } from "./schema";
 
 const STATUS_OPTIONS = [
   [true, "已上架"],
@@ -12,14 +11,12 @@ const STATUS_OPTIONS = [
 
 interface Props {
   control: ItemFormControl;
-  register: UseFormRegister<ItemFormInput>;
   isSubmitting: boolean;
   onCancel: () => void;
 }
 
 export function ItemPublishSettings({
   control,
-  register,
   isSubmitting,
   onCancel,
 }: Props) {
@@ -54,14 +51,6 @@ export function ItemPublishSettings({
                   ))}
                 </div>
               )}
-            />
-          </Field>
-
-          <Field label="顯示排序" hint="留空則自動排到最後">
-            <Input
-              type="number"
-              placeholder="自動"
-              {...register("display_order")}
             />
           </Field>
         </div>

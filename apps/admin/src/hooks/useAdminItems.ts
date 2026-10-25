@@ -3,7 +3,6 @@ import {
   fetchAdminItems,
   deleteItem,
   toggleItemActive,
-  updateItemsOrder,
   type ItemFilters,
 } from "@/services/items";
 
@@ -34,11 +33,5 @@ export function useAdminItems({ filters, page }: UseAdminItemsProps) {
     onSuccess: invalidate,
   });
 
-  const orderMutation = useMutation({
-    mutationFn: updateItemsOrder,
-    // 失敗時可能已有部分寫入，一律重抓
-    onSettled: invalidate,
-  });
-
-  return { query, deleteMutation, toggleMutation, orderMutation };
+  return { query, deleteMutation, toggleMutation };
 }

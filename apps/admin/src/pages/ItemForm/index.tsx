@@ -81,13 +81,14 @@ export default function ItemFormPage() {
     }
 
     try {
-      const itemId = await mutation.mutateAsync({
+      await mutation.mutateAsync({
         values: itemValues,
         cover,
         gallery: gallery.map((image) => image.file),
         characterSlugs: getCharacterSlugs(values.character_ids, characters),
       });
-      navigate(`/items/${itemId}/edit`);
+      // 列表依最近更新排序，回到列表第 1 頁就能看到剛新增的商品
+      navigate("/items");
     } catch (error) {
       if (isSlugConflict(error)) {
         setError("slug", { message: SLUG_TAKEN_MESSAGE });
@@ -238,7 +239,6 @@ export default function ItemFormPage() {
 
         <ItemPublishSettings
           control={control}
-          register={register}
           isSubmitting={isSubmitting}
           onCancel={() => navigate("/items")}
         />
