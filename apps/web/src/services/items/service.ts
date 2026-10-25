@@ -1,9 +1,27 @@
 import { supabase } from '@/lib/supabase';
-import type { ItemDetail, ItemsPage, PageCursor } from './types';
+import type { Item, ItemDetail, ItemsPage, PageCursor } from './types';
 
 export const PAGE_SIZE = 20;
 
 type CharacterFilter = 'all' | 'giyu' | 'shinobu' | 'both';
+
+/**
+ * 排序為 release_date DESC NULLS LAST, display_order ASC, id ASC，cursor 條件要跟它一致。
+ * PostgREST 的 NULL 只能用 .is.null 比對，所以有沒有發售日要分兩段寫：
+ *   有：release_date < d OR (release_date = d AND (display_order, id) 在後面) OR release_date IS NULL
+ *   沒有：release_date IS NULL AND (display_order, id) 在後面
+ */
+const cursorFilter = ({ releaseDate, displayOrder, id }: PageCursor): string => {
+  const afterInGroup = `or(display_order.gt.${displayOrder},and(display_order.eq.${displayOrder},id.gt.${id}))`;
+  if (releaseDate === null) return `and(release_date.is.null,${afterInGroup})`;
+  return `release_date.lt.${releaseDate},and(release_date.eq.${releaseDate},${afterInGroup}),release_date.is.null`;
+};
+
+const toCursor = (item: Item): PageCursor => ({
+  releaseDate: item.release_date,
+  displayOrder: item.display_order,
+  id: item.id,
+});
 
 /**
  * 依角色篩選取得 item IDs（用於 infinite query 的前置查詢）
@@ -61,6 +79,7 @@ export const fetchItemsPage = async ({
     .from('items')
     .select(`*, item_characters(characters(*)), ${categoriesJoin}, series(*)`)
     .eq('is_active', true)
+    .order('release_date', { ascending: false, nullsFirst: false })
     .order('display_order', { ascending: true })
     .order('id', { ascending: true })
     .limit(PAGE_SIZE + 1);
@@ -74,9 +93,7 @@ export const fetchItemsPage = async ({
   }
 
   if (cursor !== null) {
-    query = query.or(
-      `display_order.gt.${cursor.displayOrder},and(display_order.eq.${cursor.displayOrder},id.gt.${cursor.id})`,
-    );
+    query = query.or(cursorFilter(cursor));
   }
 
   const { data, error } = await query;
@@ -90,7 +107,7 @@ export const fetchItemsPage = async ({
 
   return {
     items,
-    nextCursor: hasNextPage && last ? { displayOrder: last.display_order ?? 0, id: last.id } : null,
+    nextCursor: hasNextPage && last ? toCursor(last) : null,
   };
 };
 
@@ -100,7 +117,7 @@ export const fetchItemsPage = async ({
  * buildSearchQuery 內部會呼叫兩次 .or()，產生兩個獨立的 or= URL param。
  * PostgREST 對多個頂層 filter 條件一律以 AND 組合，實際 SQL 為：
  *   WHERE (name_jp ILIKE '%q%' OR name_tw ILIKE '%q%')              ← 搜尋條件
- *     AND (display_order > N OR (display_order = N AND id > X))     ← cursor
+ *     AND (cursorFilter 的條件)                                        ← cursor
  */
 
 const buildSearchQuery = <Q extends { or(filters: string): Q }>(
@@ -109,9 +126,7 @@ const buildSearchQuery = <Q extends { or(filters: string): Q }>(
 ) => {
   let q = query.or(`name_jp.ilike.%${searchTerm}%,name_tw.ilike.%${searchTerm}%`);
   if (cursor !== null) {
-    q = q.or(
-      `display_order.gt.${cursor.displayOrder},and(display_order.eq.${cursor.displayOrder},id.gt.${cursor.id})`,
-    );
+    q = q.or(cursorFilter(cursor));
   }
   return q;
 };
@@ -127,6 +142,7 @@ export const fetchSearchPage = async ({
     .from('items')
     .select('*, item_characters(characters(*)), categories(*), series(*)')
     .eq('is_active', true)
+    .order('release_date', { ascending: false, nullsFirst: false })
     .order('display_order', { ascending: true })
     .order('id', { ascending: true })
     .limit(PAGE_SIZE + 1);
@@ -142,7 +158,7 @@ export const fetchSearchPage = async ({
 
   return {
     items,
-    nextCursor: hasNextPage && last ? { displayOrder: last.display_order ?? 0, id: last.id } : null,
+    nextCursor: hasNextPage && last ? toCursor(last) : null,
   };
 };
 
