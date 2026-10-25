@@ -152,13 +152,13 @@ export default function ItemsPage() {
       <Header />
 
       {/* 標題 */}
-      <div className='max-w-[1200px] mx-auto pt-10 pb-8 px-8'>
+      <div className='max-w-300 mx-auto pt-10 pb-8 px-8'>
         <WasujiHeading title='弐' label='周邊圖鑑' />
       </div>
 
       {/* 篩選列 / 搜尋狀態列 */}
       <div className='sticky top-[calc(3.5rem+env(safe-area-inset-top))] z-20 bg-washi/92 backdrop-blur-sm border-y border-gold/15'>
-        <div className='max-w-[1200px] mx-auto px-8 py-3'>
+        <div className='max-w-300 mx-auto px-8 py-3'>
           {isSearchMode ? (
             /* 搜尋模式：顯示目前搜尋條件 + 清除按鈕 */
             <div className='flex flex-col gap-1'>
@@ -181,7 +181,7 @@ export default function ItemsPage() {
                   <X size={11} />
                 </button>
               </div>
-              <span className='pl-[calc(12px+0.625rem)] text-[0.58rem] text-ink-faint tracking-[0.25em] font-sans'>
+              <span className='pl-5.5 text-[0.58rem] text-ink-faint tracking-[0.25em] font-sans'>
                 {isInitialLoading ? '—' : `共 ${items.length} 件`}
               </span>
             </div>
@@ -251,7 +251,7 @@ export default function ItemsPage() {
       </div>
 
       {/* 商品列表 */}
-      <div className='px-8 py-10 max-w-[1200px] mx-auto'>
+      <div className='px-8 py-10 max-w-300 mx-auto'>
         {isInitialLoading ? (
           <div className='grid grid-cols-[repeat(auto-fill,minmax(170px,1fr))] gap-4'>
             {Array.from({ length: PAGE_SIZE }).map((_, i) => (

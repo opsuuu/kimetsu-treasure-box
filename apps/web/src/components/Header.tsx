@@ -16,7 +16,7 @@ export default function SiteHeader({ back }: SiteHeaderProps) {
     <>
       <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
       <header className='sticky top-0 z-50 bg-washi/90 backdrop-blur-sm border-b border-gold/10 pt-[env(safe-area-inset-top)]'>
-        <div className='max-w-[1200px] mx-auto px-8 h-14 flex items-center justify-between sm:grid sm:grid-cols-3'>
+        <div className='max-w-300 mx-auto px-8 h-14 flex items-center justify-between sm:grid sm:grid-cols-3'>
           {/* 左欄：返回按鈕（桌機）/ 空白（手機無返回時） */}
           <div className='hidden sm:block'>
             {back && (
