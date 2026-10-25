@@ -1,4 +1,4 @@
-import { useEffect, useRef, useMemo, useCallback } from 'react';
+import { useEffect, useRef, useMemo, useCallback, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useQuery, useInfiniteQuery, type InfiniteData } from '@tanstack/react-query';
 import { Search, X } from 'lucide-react';
@@ -113,26 +113,28 @@ export default function ItemsPage() {
   const isInitialLoading = isSearchMode ? pageLoading : idsLoading || pageLoading;
   const items = useMemo(() => data?.pages.flatMap((p) => p.items) ?? [], [data?.pages]);
 
-  // 用 ref 持有最新的 callback
-  const intersectRef = useRef({ fetchNextPage, hasNextPage, isFetchingNextPage });
-  useEffect(() => {
-    intersectRef.current = { fetchNextPage, hasNextPage, isFetchingNextPage };
-  });
+  // IntersectionObserver 只在進出範圍的那一刻通知；上一頁載完時 sentinel 可能仍在範圍內，
+  // 不能只在通知當下決定要不要抓下一頁
+  const [isSentinelVisible, setIsSentinelVisible] = useState(false);
 
   const sentinelRef = useCallback((node: HTMLDivElement | null) => {
     if (!node) return;
     const observer = new IntersectionObserver(
-      ([entry]) => {
-        const { fetchNextPage, hasNextPage, isFetchingNextPage } = intersectRef.current;
-        if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
-          fetchNextPage();
-        }
-      },
+      ([entry]) => setIsSentinelVisible(entry.isIntersecting),
       { rootMargin: '200px' },
     );
     observer.observe(node);
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      setIsSentinelVisible(false);
+    };
   }, []);
+
+  useEffect(() => {
+    if (isSentinelVisible && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [isSentinelVisible, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   // 類別 filter 切換時，捲動 active tab 到可視範圍
   useEffect(() => {
