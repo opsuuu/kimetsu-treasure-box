@@ -16,12 +16,12 @@ import {
   isSlugConflict,
   isSlugTaken,
 } from "@/services/items";
-import { FormSection } from "./FormSection";
-import { Field } from "./Field";
-import { ItemBasicFields } from "./ItemBasicFields";
-import { SlugField } from "./SlugField";
-import { ItemImageFields } from "./ItemImageFields";
-import { ItemPublishSettings } from "./ItemPublishSettings";
+import { FormSection } from "./components/FormSection";
+import { Field } from "./components/Field";
+import { ItemBasicFields } from "./components/ItemBasicFields";
+import { SlugField } from "./components/SlugField";
+import { ItemImageFields } from "./components/ItemImageFields";
+import { ItemPublishSettings } from "./components/ItemPublishSettings";
 import {
   getCharacterSlugs,
   itemFormDefaults,

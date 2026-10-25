@@ -20,7 +20,7 @@ import {
   ACCEPTED_IMAGE_TYPES,
   MAX_IMAGE_SIZE,
   type GalleryImage,
-} from "./schema";
+} from "../schema";
 
 interface Preview {
   url: string;

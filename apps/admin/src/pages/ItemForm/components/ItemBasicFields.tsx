@@ -17,7 +17,7 @@ import type { Character } from "@/services/characters";
 import type { Series } from "@/services/series";
 import { Field } from "./Field";
 import { FormSection } from "./FormSection";
-import type { ItemFormControl, ItemFormInput } from "./schema";
+import type { ItemFormControl, ItemFormInput } from "../schema";
 
 interface Props {
   control: ItemFormControl;

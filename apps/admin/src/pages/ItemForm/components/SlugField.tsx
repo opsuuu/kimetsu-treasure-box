@@ -14,7 +14,7 @@ import type { Character } from "@/services/characters";
 import type { Series } from "@/services/series";
 import { Field } from "./Field";
 import { FormSection } from "./FormSection";
-import { buildSlug, type ItemFormControl, type ItemFormInput } from "./schema";
+import { buildSlug, type ItemFormControl, type ItemFormInput } from "../schema";
 
 interface Props {
   control: ItemFormControl;

@@ -2,7 +2,7 @@ import { Controller, type FieldErrors } from "react-hook-form";
 import { Field } from "./Field";
 import { FormSection } from "./FormSection";
 import { CoverUploader, GalleryUploader } from "./ImageUploader";
-import type { ItemFormControl, ItemFormInput } from "./schema";
+import type { ItemFormControl, ItemFormInput } from "../schema";
 
 interface Props {
   control: ItemFormControl;

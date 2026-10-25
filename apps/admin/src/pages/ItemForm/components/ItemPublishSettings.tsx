@@ -2,7 +2,7 @@ import { Controller } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
 import { Field } from "./Field";
-import type { ItemFormControl } from "./schema";
+import type { ItemFormControl } from "../schema";
 
 const STATUS_OPTIONS = [
   [true, "已上架"],
