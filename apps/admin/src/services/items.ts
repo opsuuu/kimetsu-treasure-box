@@ -204,6 +204,62 @@ export async function createItemImages(
   if (error) throw error;
 }
 
+export interface ReleaseDateGroup {
+  /** null 代表未填發售日 */
+  releaseDate: string | null;
+  count: number;
+}
+
+/** 發售日由新到舊，未填發售日排在最後 */
+export async function fetchReleaseDateGroups(): Promise<ReleaseDateGroup[]> {
+  const { data, error } = await supabase.from('items').select('release_date');
+  if (error) throw error;
+
+  const counts = new Map<string | null, number>();
+  for (const { release_date } of data ?? []) {
+    counts.set(release_date, (counts.get(release_date) ?? 0) + 1);
+  }
+
+  return [...counts]
+    .map(([releaseDate, count]) => ({ releaseDate, count }))
+    .sort((a, b) => {
+      if (a.releaseDate === b.releaseDate) return 0;
+      if (a.releaseDate === null) return 1;
+      if (b.releaseDate === null) return -1;
+      return a.releaseDate < b.releaseDate ? 1 : -1;
+    });
+}
+
+export type ReleaseDateItem = Pick<
+  Tables<'items'>,
+  'id' | 'name_jp' | 'name_tw' | 'image_cover_url' | 'is_active'
+>;
+
+/** 依前台的同日順序排列，包含下架商品 */
+export async function fetchItemsByReleaseDate(
+  releaseDate: string | null,
+): Promise<ReleaseDateItem[]> {
+  let query = supabase
+    .from('items')
+    .select('id, name_jp, name_tw, image_cover_url, is_active')
+    .order('display_order', { ascending: true })
+    .order('id', { ascending: true });
+
+  query = releaseDate === null
+    ? query.is('release_date', null)
+    : query.eq('release_date', releaseDate);
+
+  const { data, error } = await query;
+  if (error) throw error;
+  return data ?? [];
+}
+
+/** ids 必須是同一個發售日的整組商品，DB 端會拒絕不完整或過期的資料 */
+export async function reorderItems(ids: string[]): Promise<void> {
+  const { error } = await supabase.rpc('reorder_items', { p_ids: ids });
+  if (error) throw error;
+}
+
 export async function deleteItem(id: string): Promise<void> {
   const { error } = await supabase.from('items').delete().eq('id', id);
   if (error) throw error;
