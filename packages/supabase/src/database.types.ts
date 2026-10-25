@@ -239,7 +239,7 @@ export type Database = {
           category_id: string | null
           created_at: string | null
           description: string | null
-          display_order: number | null
+          display_order: number
           id: string
           image_cover_url: string | null
           is_active: boolean
@@ -253,13 +253,13 @@ export type Database = {
           series_id: string | null
           slug: string
           specification: string | null
-          updated_at: string | null
+          updated_at: string
         }
         Insert: {
           category_id?: string | null
           created_at?: string | null
           description?: string | null
-          display_order?: number | null
+          display_order: number
           id?: string
           image_cover_url?: string | null
           is_active?: boolean
@@ -273,13 +273,13 @@ export type Database = {
           series_id?: string | null
           slug: string
           specification?: string | null
-          updated_at?: string | null
+          updated_at?: string
         }
         Update: {
           category_id?: string | null
           created_at?: string | null
           description?: string | null
-          display_order?: number | null
+          display_order?: number
           id?: string
           image_cover_url?: string | null
           is_active?: boolean
@@ -293,7 +293,7 @@ export type Database = {
           series_id?: string | null
           slug?: string
           specification?: string | null
-          updated_at?: string | null
+          updated_at?: string
         }
         Relationships: [
           {
@@ -353,7 +353,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      next_item_display_order: { Args: never; Returns: number }
+      reorder_items: { Args: { p_ids: string[] }; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
