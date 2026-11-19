@@ -43,6 +43,14 @@ export default defineConfig([
       'react-refresh/only-export-components': 'off',
     },
   },
+  // 路由表在 module 頂層宣告 React.lazy 頁面又 export router 物件，本來就無法 HMR；
+  // 路由表很少改動，整頁 reload 可接受
+  {
+    files: ['src/routers/index.tsx'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+    },
+  },
   // Cloudflare Pages Functions 跑在 Workers runtime，不是瀏覽器
   {
     files: ['functions/**/*.ts'],

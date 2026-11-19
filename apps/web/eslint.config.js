@@ -1,6 +1,5 @@
 import js from '@eslint/js';
 import globals from 'globals';
-import react from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
 import tseslint from 'typescript-eslint';
@@ -22,13 +21,10 @@ export default defineConfig([
       globals: globals.browser,
     },
     plugins: {
-      react,
       '@tanstack/query': tanstackQuery,
     },
     rules: {
       'no-unused-vars': 'off',
-      'react/prop-types': 'off',
-      'react/display-name': 'off',
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'error',
       'prefer-const': 'off',
@@ -39,11 +35,6 @@ export default defineConfig([
     },
     linterOptions: {
       reportUnusedDisableDirectives: true,
-    },
-    settings: {
-      react: {
-        version: 'detect',
-      },
     },
   },
   // shadcn 元件慣例會一起匯出 variants 等非元件值
