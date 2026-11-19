@@ -1,6 +1,11 @@
 import { useEffect, useRef, useMemo, useCallback, useState } from 'react';
 import { useSearchParams } from 'react-router';
-import { useQuery, useInfiniteQuery, type InfiniteData } from '@tanstack/react-query';
+import {
+  useQuery,
+  useInfiniteQuery,
+  type InfiniteData,
+  type QueryKey,
+} from '@tanstack/react-query';
 import { Search, X } from 'lucide-react';
 import { WasujiHeading, LoadingState, ErrorState, EmptyState, Header } from '@/components';
 import PageFooter from '@/components/PageFooter';
@@ -71,10 +76,10 @@ export default function ItemsPage() {
     ItemsPage,
     Error,
     InfiniteData<ItemsPage>,
-    string[],
+    QueryKey,
     PageCursor | null
   >({
-    queryKey: ['items', characterFilter, categoryFilter],
+    queryKey: ['items', characterFilter, categoryFilter, filteredItemIds ?? null],
     queryFn: ({ pageParam }) =>
       fetchItemsPage({
         itemIds: filteredItemIds ?? null,
