@@ -43,8 +43,9 @@ export default defineConfig([
       'react-refresh/only-export-components': 'off',
     },
   },
-  // 路由表在 module 頂層宣告 React.lazy 頁面又 export router 物件，本來就無法 HMR；
-  // 路由表很少改動，整頁 reload 可接受
+  // react-refresh 0.5 起把 React.lazy 視為元件，路由表在 module 頂層宣告 lazy 頁面又 export router 物件，
+  // 因此會報錯（web 把 lazy 包在 lazyWithSuspense() 裡，所以不受影響）。
+  // 這個檔案 export 的不是元件，本來就無法 HMR；路由表很少改動，整頁 reload 可接受
   {
     files: ['src/routers/index.tsx'],
     rules: {
