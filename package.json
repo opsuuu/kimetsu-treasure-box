@@ -36,7 +36,6 @@
     "onlyBuiltDependencies": [
       "@swc/core",
       "esbuild",
-      "msw",
       "unrs-resolver"
     ],
     "ignoredBuiltDependencies": [
