@@ -7,7 +7,7 @@ export default function GiyuDecorations() {
       <svg
         aria-hidden
         viewBox='0 0 140 140'
-        className='absolute left-0 bottom-0 w-[140px] h-[140px] pointer-events-none opacity-[0.13] overflow-hidden'
+        className='absolute left-0 bottom-0 w-35 h-35 pointer-events-none opacity-13 overflow-hidden'
       >
         {Array.from({ length: 17 }, (_, b) =>
           (b % 2 === 0 ? [0, 56, 112] : [28, 84, 140]).map((cx) => ({
@@ -45,7 +45,7 @@ export default function GiyuDecorations() {
       <svg
         aria-hidden
         viewBox='0 0 260 220'
-        className='absolute top-[-5px] right-40 w-[260px] h-[220px] pointer-events-none overflow-visible'
+        className='absolute -top-1.25 right-40 w-65 h-55 pointer-events-none overflow-visible'
       >
         <defs>
           <linearGradient id='cg1' x1='0%' y1='0%' x2='100%' y2='100%'>

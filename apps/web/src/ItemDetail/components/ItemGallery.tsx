@@ -36,7 +36,7 @@ export default function ItemGallery({ images, itemName }: ItemGalleryProps) {
           {images.map((src, i) => (
             <SwiperSlide
               key={i}
-              className='w-[80px]! h-[80px]! overflow-hidden transition-opacity duration-200 opacity-45 hover:opacity-75 cursor-pointer [&.swiper-slide-thumb-active]:opacity-100 [&.swiper-slide-thumb-active]:ring-1 [&.swiper-slide-thumb-active]:ring-gold/60'
+              className='w-20! h-20! overflow-hidden transition-opacity duration-200 opacity-45 hover:opacity-75 cursor-pointer [&.swiper-slide-thumb-active]:opacity-100 [&.swiper-slide-thumb-active]:ring-1 [&.swiper-slide-thumb-active]:ring-gold/60'
             >
               <img src={src} alt={`縮圖 ${i + 1}`} className='w-full h-full object-cover' />
             </SwiperSlide>

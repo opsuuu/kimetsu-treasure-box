@@ -7,7 +7,7 @@ export default function ShinobuDecorations() {
       <svg
         aria-hidden
         viewBox='0 0 260 160'
-        className='absolute top-0 right-0 w-[260px] h-[160px] pointer-events-none overflow-visible'
+        className='absolute top-0 right-0 w-65 h-40 pointer-events-none overflow-visible'
       >
         <path
           d='M 80 2 C 130 6, 190 3, 260 5'
@@ -64,14 +64,14 @@ export default function ShinobuDecorations() {
       <svg
         aria-hidden
         viewBox='0 0 100 100'
-        className='absolute right-[1.2rem] bottom-[1.8rem] w-[90px] h-[90px] opacity-[0.18] pointer-events-none overflow-visible'
+        className='absolute right-[1.2rem] bottom-[1.8rem] w-22.5 h-22.5 opacity-18 pointer-events-none overflow-visible'
       >
         <Butterfly x={50} y={50} scale={2.0} delay={0} opacity={1} rotate={-5} />
       </svg>
       <svg
         aria-hidden
         viewBox='0 0 60 60'
-        className='absolute left-6 top-14 w-[50px] h-[50px] opacity-[0.12] pointer-events-none overflow-visible'
+        className='absolute left-6 top-14 w-12.5 h-12.5 opacity-12 pointer-events-none overflow-visible'
       >
         <Butterfly x={30} y={30} scale={1.2} delay={1.5} opacity={1} rotate={10} />
       </svg>
