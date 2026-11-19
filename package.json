@@ -16,6 +16,9 @@
     "turbo": "^2.5.4"
   },
   "packageManager": "pnpm@10.33.2",
+  "engines": {
+    "node": "24.x"
+  },
   "lint-staged": {
     "apps/web/**/*.{ts,tsx,js,jsx}": [
       "prettier --write"
