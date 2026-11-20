@@ -4,11 +4,19 @@ import type { Category } from "@/services/categories";
 import type { Character } from "@/services/characters";
 import type { Series } from "@/services/series";
 
-/** 其他圖片送出前只存在記憶體，需要穩定 id 才能做拖曳排序 */
-export interface GalleryImage {
-  id: string;
-  file: File;
-}
+/**
+ * existing 是已存在 R2 的圖片，new 是尚未上傳、只在記憶體裡的檔案。
+ *
+ * isDirty 依賴 RHF（7.92）的 deepEqual：File 沒有 own keys，會改用 Object.is 比對參照，
+ * 而 defaultValues 的 clone 也保留 File 原參照，所以同一個 File 相等、不同 File 不相等。
+ * 這是 RHF 內部行為，改資料模型或升級 RHF 時要回頭確認。
+ */
+export type FormImage =
+  | { kind: "existing"; url: string }
+  | { kind: "new"; file: File };
+
+/** id 一律 crypto.randomUUID()，只給 dnd-kit 當 key，不代表圖片身分 */
+export type GalleryImage = FormImage & { id: string };
 
 interface BuildSlugParams {
   characterIds: string[];
@@ -65,8 +73,8 @@ export const itemFormSchema = z.object({
     .min(1, "請輸入網址名稱")
     .regex(/^[a-z0-9-]+$/, "僅允許小寫英文字母、數字與連字號"),
   cover: z
-    .custom<File | null>()
-    .refine((file): file is File => file instanceof File, "請上傳封面圖片"),
+    .custom<FormImage | null>()
+    .refine((image): image is FormImage => image !== null, "請上傳封面圖片"),
   gallery: z.array(z.custom<GalleryImage>()),
   price: z.string().refine((v) => !v || Number(v) >= 0, "商品金額不可為負數"),
   release_date: z.string(),

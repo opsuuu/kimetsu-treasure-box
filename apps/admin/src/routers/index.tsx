@@ -7,7 +7,7 @@ import { PageSuspense } from '@/components/PageSuspense';
 const LoginPage = React.lazy(() => import('@/pages/Login'));
 const DashboardPage = React.lazy(() => import('@/pages/Dashboard'));
 const ItemsPage = React.lazy(() => import('@/pages/Items'));
-const ItemFormPage = React.lazy(() => import('@/pages/ItemForm'));
+const ItemNewPage = React.lazy(() => import('@/pages/ItemNew'));
 const FrontOrderPage = React.lazy(() => import('@/pages/FrontOrder'));
 
 const router = createBrowserRouter([
@@ -49,7 +49,7 @@ const router = createBrowserRouter([
             path: '/items/new',
             element: (
               <PageSuspense>
-                <ItemFormPage />
+                <ItemNewPage />
               </PageSuspense>
             ),
           },

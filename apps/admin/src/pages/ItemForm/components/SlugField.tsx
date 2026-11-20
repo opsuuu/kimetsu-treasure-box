@@ -40,6 +40,10 @@ interface Props {
   characters: Character[];
   categories: Category[];
   seriesList: Series[];
+  /** false = 載入時就是手動模式，掛載時不會用自動產生值覆蓋既有 slug（編輯頁） */
+  initialAutoGenerate: boolean;
+  /** 載入時的 slug 與上架狀態；只有編輯頁會傳，有值代表編輯模式 */
+  original?: { slug: string; isActive: boolean };
 }
 
 export function SlugField({
@@ -51,9 +55,11 @@ export function SlugField({
   characters,
   categories,
   seriesList,
+  initialAutoGenerate,
+  original,
 }: Props) {
   // true = 使用者已手動接管 slug，自動產生不再覆蓋
-  const [slugEdited, setSlugEdited] = useState(false);
+  const [slugEdited, setSlugEdited] = useState(!initialAutoGenerate);
   const [regenerateOpen, setRegenerateOpen] = useState(false);
   // 只用來組 slug，不存 DB
   const [modifier, setModifier] = useState("");
@@ -77,14 +83,21 @@ export function SlugField({
     seriesList,
   });
 
-  // 送出前不驗證，避免一進頁面空 slug 就跳錯；送出後才驗證，讓補選角色時舊錯誤能消失
+  // 送出前不驗證，避免一進頁面空 slug 就跳錯；送出後才驗證，讓補選角色時舊錯誤能消失。
+  // shouldDirty 讓 RHF 重算整張表單的 isDirty：取消選取角色時，角色欄位先變回預設、slug 晚一步才清空，
+  // 沒有重算的話 isDirty 會停在 true，改回原值後儲存按鈕不會恢復停用
   useEffect(() => {
     if (slugEdited) return;
-    setValue("slug", generatedSlug, { shouldValidate: isSubmitted });
+    setValue("slug", generatedSlug, {
+      shouldValidate: isSubmitted,
+      shouldDirty: true,
+    });
   }, [generatedSlug, slugEdited, isSubmitted, setValue]);
 
   const slugField = register("slug");
   const canRestoreSlug = Boolean(generatedSlug) && slug !== generatedSlug;
+  const isEditMode = original !== undefined;
+  const willBreakLiveUrl = original?.isActive === true && slug !== original.slug;
 
   function handleSlugChange(event: ChangeEvent<HTMLInputElement>) {
     setSlugEdited(true);
@@ -102,7 +115,12 @@ export function SlugField({
       title="網址名稱"
       description="前台商品頁網址，建立後請盡量不要再更動"
     >
-      {/* 手填段：商品修飾、款式 */}
+      {/* 手填段：商品修飾、款式。不存 DB，也不從既有 slug 反推（角色、系列 slug 本身含連字號，拆法有歧義），所以編輯時一定是空的 */}
+      {isEditMode && (
+        <p className="text-xs text-gray-500">
+          編輯時這兩欄不會帶入原值，只影響下方「自動產生」與還原結果
+        </p>
+      )}
       <div className="grid gap-4 sm:grid-cols-2">
         <Field
           label="商品修飾"
@@ -171,6 +189,11 @@ export function SlugField({
 
       {/* 預覽與長度提示：手動改過 slug 後，手填段的變化不會反映在輸入框，需要另外顯示 */}
       <div className="-mt-2 space-y-1 text-[11px]">
+        {willBreakLiveUrl && (
+          <p className="text-amber-600">
+            修改後，前台舊網址 /items/{original.slug} 將失效
+          </p>
+        )}
         {slugEdited && generatedSlug && slug !== generatedSlug && (
           <p className="text-gray-400">
             自動產生：<span className="font-mono">{generatedSlug}</span>
@@ -207,7 +230,17 @@ export function SlugField({
           </>
         }
       >
-        {`目前的網址名稱是手動修改過的，還原後會變成「${generatedSlug}」。`}
+        {isEditMode ? (
+          <>
+            {`還原後會變成「${generatedSlug}」。`}
+            {!modifier.trim() &&
+              !variant.trim() &&
+              "目前沒有填商品修飾、款式，還原後不會包含這兩段。"}
+            {original.isActive && "前台舊網址會失效。"}
+          </>
+        ) : (
+          `目前的網址名稱是手動修改過的，還原後會變成「${generatedSlug}」。`
+        )}
       </Modal>
     </FormSection>
   );

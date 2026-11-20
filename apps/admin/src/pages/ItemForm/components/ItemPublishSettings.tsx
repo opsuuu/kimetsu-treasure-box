@@ -12,12 +12,14 @@ const STATUS_OPTIONS = [
 interface Props {
   control: ItemFormControl;
   isSubmitting: boolean;
+  isDirty: boolean;
   onCancel: () => void;
 }
 
 export function ItemPublishSettings({
   control,
   isSubmitting,
+  isDirty,
   onCancel,
 }: Props) {
   return (
@@ -59,11 +61,14 @@ export function ItemPublishSettings({
           <Button
             type="submit"
             size="lg"
-            disabled={isSubmitting}
+            disabled={isSubmitting || !isDirty}
             className="w-full border-transparent bg-linear-to-r from-giyu to-shinobu text-white hover:from-[#336a91] hover:to-[#6a4f91]"
           >
             {isSubmitting ? "儲存中..." : "儲存週邊"}
           </Button>
+          {!isDirty && (
+            <p className="text-center text-xs text-gray-400">尚未修改</p>
+          )}
           <Button
             type="button"
             variant="outline"
