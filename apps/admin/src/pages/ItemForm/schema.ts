@@ -86,6 +86,14 @@ export function getCharacterSlugs(
     .map((c) => c.slug);
 }
 
+// categories.key 是 snake_case（acrylic_stand），且同時是前台 ?category= 的篩選值，不能改成連字號
+function toSlugSegment(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 /**
  * 組出 {角色}-{類別}-{系列}，缺少的區段直接略過。
  * 角色順序取自 characters 陣列本身（fetchCharacters 已依 display_order 排序），
@@ -105,5 +113,7 @@ export function buildSlug({
 
   return [...characterSlugs, categoryKey, seriesSlug]
     .filter((part): part is string => Boolean(part))
+    .map(toSlugSegment)
+    .filter(Boolean)
     .join("-");
 }
