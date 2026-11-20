@@ -14,10 +14,35 @@ interface BuildSlugParams {
   characterIds: string[];
   categoryId: string;
   seriesId: string;
+  /** 商品修飾：商品名稱的一部分，例 tsunagaru、big */
+  modifier: string;
+  /** 款式：活動裡的哪一款，例 key-visual-a、tokyo、2 */
+  variant: string;
   characters: Character[];
   categories: Category[];
   seriesList: Series[];
 }
+
+export const SLUG_LENGTH_HINT = 60;
+
+export const SLUG_MODIFIER_SUGGESTIONS = [
+  "tsunagaru",
+  "yurugao",
+  "big",
+  "mini",
+  "box",
+  "set",
+  "random",
+];
+
+export const SLUG_VARIANT_SUGGESTIONS = [
+  "key-visual",
+  "hashira-hyakkei",
+  "common",
+  "tokyo",
+  "osaka",
+  "fukuoka",
+];
 
 export const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 export const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -87,7 +112,7 @@ export function getCharacterSlugs(
 }
 
 // categories.key 是 snake_case（acrylic_stand），且同時是前台 ?category= 的篩選值，不能改成連字號
-function toSlugSegment(value: string): string {
+export function toSlugSegment(value: string): string {
   return value
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
@@ -95,7 +120,8 @@ function toSlugSegment(value: string): string {
 }
 
 /**
- * 組出 {角色}-{類別}-{系列}，缺少的區段直接略過。
+ * 組出 {角色}-{類別}-{商品修飾}-{系列}-{款式}，缺少的區段直接略過。
+ * 商品修飾是商品名稱的一部分（繋がる的 acrylic-stand），所以緊接在類別後。
  * 角色順序取自 characters 陣列本身（fetchCharacters 已依 display_order 排序），
  * 同一組角色才會永遠產生同一個 slug，不受使用者點選先後影響。
  */
@@ -103,6 +129,8 @@ export function buildSlug({
   characterIds,
   categoryId,
   seriesId,
+  modifier,
+  variant,
   characters,
   categories,
   seriesList,
@@ -111,7 +139,7 @@ export function buildSlug({
   const categoryKey = categories.find((c) => c.id === categoryId)?.key;
   const seriesSlug = seriesList.find((s) => s.id === seriesId)?.slug;
 
-  return [...characterSlugs, categoryKey, seriesSlug]
+  return [...characterSlugs, categoryKey, modifier, seriesSlug, variant]
     .filter((part): part is string => Boolean(part))
     .map(toSlugSegment)
     .filter(Boolean)

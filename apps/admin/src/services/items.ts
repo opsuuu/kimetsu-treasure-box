@@ -124,7 +124,8 @@ export interface ItemFormValues {
   specification: string;
 }
 
-export const SLUG_TAKEN_MESSAGE = '此網址名稱已被使用，請修改後再試。';
+export const SLUG_TAKEN_MESSAGE =
+  '此網址名稱已被使用。若是自動產生的網址，代表已有同角色＋類別＋系列的商品，請填寫商品修飾或款式。';
 
 /** Postgres unique_violation，用來判斷 slug 撞上 DB 的 UNIQUE 限制 */
 export function isSlugConflict(error: unknown): boolean {

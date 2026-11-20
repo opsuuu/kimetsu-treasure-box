@@ -1,4 +1,4 @@
-import { useEffect, useState, type ChangeEvent } from "react";
+import { useEffect, useId, useState, type ChangeEvent } from "react";
 import {
   useWatch,
   type FieldError,
@@ -14,7 +14,22 @@ import type { Character } from "@/services/characters";
 import type { Series } from "@/services/series";
 import { Field } from "./Field";
 import { FormSection } from "./FormSection";
-import { buildSlug, type ItemFormControl, type ItemFormInput } from "../schema";
+import {
+  SLUG_LENGTH_HINT,
+  SLUG_MODIFIER_SUGGESTIONS,
+  SLUG_VARIANT_SUGGESTIONS,
+  buildSlug,
+  toSlugSegment,
+  type ItemFormControl,
+  type ItemFormInput,
+} from "../schema";
+
+/** 有輸入但轉換後為空（例如只打了日文），這段會在 slug 裡被略過 */
+function droppedSegmentError(value: string): string | undefined {
+  return value.trim() && !toSlugSegment(value)
+    ? "只能使用英文與數字，這段會被略過"
+    : undefined;
+}
 
 interface Props {
   control: ItemFormControl;
@@ -40,6 +55,11 @@ export function SlugField({
   // true = 使用者已手動接管 slug，自動產生不再覆蓋
   const [slugEdited, setSlugEdited] = useState(false);
   const [regenerateOpen, setRegenerateOpen] = useState(false);
+  // 只用來組 slug，不存 DB
+  const [modifier, setModifier] = useState("");
+  const [variant, setVariant] = useState("");
+  const modifierListId = useId();
+  const variantListId = useId();
 
   const [characterIds, categoryId, seriesId, slug] = useWatch({
     control,
@@ -50,6 +70,8 @@ export function SlugField({
     characterIds,
     categoryId,
     seriesId,
+    modifier,
+    variant,
     characters,
     categories,
     seriesList,
@@ -80,11 +102,50 @@ export function SlugField({
       title="網址名稱"
       description="前台商品頁網址，建立後請盡量不要再更動"
     >
+      {/* 手填段：商品修飾、款式 */}
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field
+          label="商品修飾"
+          error={droppedSegmentError(modifier)}
+          hint="選填。商品名稱的一部分，例 tsunagaru、big、tsunagaru-big"
+        >
+          <Input
+            className="font-mono"
+            list={modifierListId}
+            value={modifier}
+            onChange={(event) => setModifier(event.target.value)}
+          />
+          <datalist id={modifierListId}>
+            {SLUG_MODIFIER_SUGGESTIONS.map((word) => (
+              <option key={word} value={word} />
+            ))}
+          </datalist>
+        </Field>
+        <Field
+          label="款式"
+          error={droppedSegmentError(variant)}
+          hint="選填。活動裡的哪一款，例 key-visual-a、tokyo、2"
+        >
+          <Input
+            className="font-mono"
+            list={variantListId}
+            value={variant}
+            onChange={(event) => setVariant(event.target.value)}
+          />
+          <datalist id={variantListId}>
+            {SLUG_VARIANT_SUGGESTIONS.map((word) => (
+              <option key={word} value={word} />
+            ))}
+          </datalist>
+        </Field>
+      </div>
+
+      {/* Slug 本身 */}
       <Field
         label="Slug"
         required
         error={error?.message}
-        hint="僅允許小寫英文字母、數字與連字號；預設由角色＋類別＋系列組成，手動改過可按右側還原"
+        hint="僅允許小寫英文字母、數字與連字號；預設由角色＋類別＋商品修飾＋系列＋款式組成，手動改過可按右側還原"
       >
         <div className="flex gap-2">
           <Input
@@ -107,6 +168,23 @@ export function SlugField({
           </Button>
         </div>
       </Field>
+
+      {/* 預覽與長度提示：手動改過 slug 後，手填段的變化不會反映在輸入框，需要另外顯示 */}
+      <div className="-mt-2 space-y-1 text-[11px]">
+        {slugEdited && generatedSlug && slug !== generatedSlug && (
+          <p className="text-gray-400">
+            自動產生：<span className="font-mono">{generatedSlug}</span>
+          </p>
+        )}
+        <p
+          className={
+            slug.length > SLUG_LENGTH_HINT ? "text-amber-600" : "text-gray-400"
+          }
+        >
+          {slug.length} / {SLUG_LENGTH_HINT} 字元
+          {slug.length > SLUG_LENGTH_HINT && "，建議精簡（不影響送出）"}
+        </p>
+      </div>
 
       <Modal
         open={regenerateOpen}
