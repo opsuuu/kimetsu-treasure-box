@@ -33,11 +33,6 @@ const Toaster = ({ ...props }: ToasterProps) => {
         ),
       }}
       style={toasterStyle}
-      toastOptions={{
-        classNames: {
-          toast: "cn-toast",
-        },
-      }}
       {...props}
     />
   )
