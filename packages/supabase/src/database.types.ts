@@ -353,8 +353,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      delete_item: { Args: { p_id: string }; Returns: string[] }
       next_item_display_order: { Args: never; Returns: number }
       reorder_items: { Args: { p_ids: string[] }; Returns: undefined }
+      unreferenced_image_urls: { Args: { p_urls: string[] }; Returns: string[] }
+      update_item: {
+        Args: {
+          p_character_ids: string[]
+          p_expected_updated_at: string
+          p_id: string
+          p_images: string[]
+          p_item: Json
+        }
+        Returns: string[]
+      }
     }
     Enums: {
       [_ in never]: never
