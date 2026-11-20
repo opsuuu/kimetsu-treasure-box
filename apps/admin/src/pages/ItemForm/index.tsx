@@ -93,9 +93,8 @@ export function ItemForm({
     defaultValues,
   });
 
-  const { blocker, allowLeave } = useUnsavedChangesGuard(
-    isDirty && !isSubmitting,
-  );
+  // 送出中也要攔：離開後 submitItem 仍在背景執行，成功時的 navigate 會把使用者從別頁拉回列表
+  const { blocker, allowLeave } = useUnsavedChangesGuard(isDirty);
 
   async function submitItem(values: ItemFormOutput) {
     setFormError(null);
