@@ -227,7 +227,14 @@ declare
   image_urls text[];
   cover_url text;
 begin
-  -- 先鎖住商品列：update_item 正在新增圖片時會等它 commit，下面才查得到新圖片，不會漏刪 R2 檔。
+  -- 必須在任何查詢之前取鎖，和 update_item 排隊。unreferenced_image_urls 只看得到已 commit 的引用，
+  -- 不排隊的話，跨商品共用的網址會出錯：別的商品正把這裡的網址加進去、還沒 commit 時，這裡會把它當成
+  -- 沒人引用而回傳，前端刪掉 R2 檔後對方破圖；兩邊同時移除共用網址時，又都以為對方還在用，留下孤兒檔。
+  -- 取鎖順序和 update_item、reorder_items 一樣是 advisory → row，不會死鎖。
+  perform pg_advisory_xact_lock(hashtext('public.items.display_order'));
+
+  -- 不經過 RPC、直接寫子表的路徑（例如新增頁插入圖片）會由 touch_item_updated_at 鎖住這一列；
+  -- 鎖住商品列會等它 commit，下面才查得到那些圖片，不會漏刪 R2 檔。
   perform 1 from public.items where id = p_id for update;
 
   -- 必須在 DELETE 之前查，cascade 之後就查不到了
