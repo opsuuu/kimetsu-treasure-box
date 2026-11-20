@@ -32,16 +32,22 @@ export const SLUG_MODIFIER_SUGGESTIONS = [
   "mini",
   "box",
   "set",
-  "random",
 ];
 
+// 地名依北到南排列
 export const SLUG_VARIANT_SUGGESTIONS = [
   "key-visual",
   "hashira-hyakkei",
   "common",
+  "gotochi",
+  "hokkaido",
   "tokyo",
+  "ishikawa",
+  "aichi",
+  "kyoto",
   "osaka",
   "fukuoka",
+  "kagoshima",
 ];
 
 export const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
