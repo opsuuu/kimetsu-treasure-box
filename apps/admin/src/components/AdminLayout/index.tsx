@@ -3,6 +3,7 @@ import { NavLink, Outlet, useLocation, useNavigate } from "react-router";
 import { LogOut, ChevronRight, Menu } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
+import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/cn";
 import { navItems } from "@/config/navigation";
 
@@ -126,6 +127,9 @@ export function AdminLayout() {
           <Outlet />
         </main>
       </div>
+
+      {/* 掛在 layout，換頁時不會 unmount，導頁前呼叫 toast 也看得到 */}
+      <Toaster />
     </div>
   );
 }
