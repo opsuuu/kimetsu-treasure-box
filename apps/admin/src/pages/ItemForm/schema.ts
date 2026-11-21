@@ -76,7 +76,11 @@ export const itemFormSchema = z.object({
     .custom<FormImage | null>()
     .refine((image): image is FormImage => image !== null, "請上傳封面圖片"),
   gallery: z.array(z.custom<GalleryImage>()),
-  price: z.string().refine((v) => !v || Number(v) >= 0, "商品金額不可為負數"),
+  // DB 是 bigint，小數送出會被拒絕
+  price: z
+    .string()
+    .refine((v) => !v || Number(v) >= 0, "商品金額不可為負數")
+    .refine((v) => !v || Number.isInteger(Number(v)), "商品金額須為整數"),
   release_date: z.string(),
   description: z.string(),
   specification: z.string(),
