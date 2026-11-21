@@ -147,35 +147,61 @@ export async function isSlugTaken(slug: string): Promise<boolean> {
   return data !== null;
 }
 
+/** update_item 的 p_item 白名單欄位，新增與編輯都用同一份正規化，前端一律送齊所有 key */
+type ItemRow = Pick<
+  Tables<'items'>,
+  | 'name_jp'
+  | 'name_tw'
+  | 'slug'
+  | 'category_id'
+  | 'series_id'
+  | 'price'
+  | 'release_date'
+  | 'is_active'
+  | 'official_url'
+  | 'description'
+  | 'note'
+  | 'material'
+  | 'specification'
+  | 'image_cover_url'
+>;
+
+/**
+ * 空字串一律轉 null：DB 存的是 null，編輯時送 '' 會被 trigger 判定內容有變而改掉 updated_at；
+ * update_item 逐欄 ::uuid、::date 轉型，'' 也會得到 22P02。價格由 schema 保證是整數，才能通過 ::bigint。
+ */
+function toItemRow(values: ItemFormValues, imageCoverUrl: string): ItemRow {
+  return {
+    name_jp: values.name_jp,
+    name_tw: values.name_tw || null,
+    slug: values.slug,
+    category_id: values.category_id || null,
+    series_id: values.series_id || null,
+    price: values.price ? Number(values.price) : null,
+    release_date: values.release_date || null,
+    is_active: values.is_active,
+    official_url: values.official_url || null,
+    description: values.description || null,
+    note: values.note || null,
+    material: values.material || null,
+    specification: values.specification || null,
+    image_cover_url: imageCoverUrl || null,
+  };
+}
+
 export async function createItem(
   values: ItemFormValues,
   imageCoverUrl: string,
 ): Promise<string> {
-  const { character_ids, ...rest } = values;
-
   const { data: item, error } = await supabase
     .from('items')
-    .insert({
-      name_jp: rest.name_jp,
-      name_tw: rest.name_tw || null,
-      slug: rest.slug,
-      category_id: rest.category_id || null,
-      series_id: rest.series_id || null,
-      price: rest.price ? Number(rest.price) : null,
-      release_date: rest.release_date || null,
-      is_active: rest.is_active,
-      official_url: rest.official_url || null,
-      description: rest.description || null,
-      note: rest.note || null,
-      material: rest.material || null,
-      specification: rest.specification || null,
-      image_cover_url: imageCoverUrl || null,
-    })
+    .insert(toItemRow(values, imageCoverUrl))
     .select('id')
     .single();
 
   if (error) throw error;
 
+  const { character_ids } = values;
   if (character_ids.length > 0) {
     const { error: charError } = await supabase
       .from('item_characters')
