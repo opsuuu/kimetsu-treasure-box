@@ -23,6 +23,7 @@ import {
   itemFormSchema,
   type ItemFormInput,
   type ItemFormOutput,
+  type ItemOriginal,
 } from "./schema";
 
 interface FormErrorAction {
@@ -51,7 +52,7 @@ interface ItemFormProps {
   defaultValues: ItemFormInput;
   initialSlugAutoGenerate: boolean;
   /** 載入時的 slug 與上架狀態，用來判斷是否顯示「舊網址會失效」警告；新增頁不傳 */
-  original?: { slug: string; isActive: boolean };
+  original?: ItemOriginal;
   onSubmit: (values: ItemFormOutput) => Promise<SubmitResult>;
 }
 
@@ -129,6 +130,8 @@ export function ItemForm({
 
   function handleErrorAction(action: FormErrorAction) {
     if (action.leave) allowLeave();
+    // 重新載入後資料沒變時表單不會 remount，不先清掉的話橫幅會一直停在畫面上
+    setFormError(null);
     action.onClick();
   }
 

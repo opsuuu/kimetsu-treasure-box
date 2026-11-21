@@ -22,6 +22,7 @@ import {
   toSlugSegment,
   type ItemFormControl,
   type ItemFormInput,
+  type ItemOriginal,
 } from "../schema";
 
 /** 有輸入但轉換後為空（例如只打了日文），這段會在 slug 裡被略過 */
@@ -43,7 +44,7 @@ interface Props {
   /** false = 載入時就是手動模式，掛載時不會用自動產生值覆蓋既有 slug（編輯頁） */
   initialAutoGenerate: boolean;
   /** 載入時的 slug 與上架狀態；只有編輯頁會傳，有值代表編輯模式 */
-  original?: { slug: string; isActive: boolean };
+  original?: ItemOriginal;
 }
 
 export function SlugField({

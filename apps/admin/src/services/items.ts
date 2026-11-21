@@ -231,6 +231,80 @@ export async function createItemImages(
   if (error) throw error;
 }
 
+// 對照 migration 20261120120000_item_edit_rpcs.sql 的 update_item，兩邊要一起改
+/** update_item：載入後已被其他人更新（p_expected_updated_at 不符） */
+export const ITEM_CONFLICT = 'KT409';
+/** update_item：商品不存在（已被刪除） */
+export const ITEM_NOT_FOUND = 'KT404';
+
+function getErrorCode(error: unknown): string | undefined {
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    typeof error.code === 'string'
+  ) {
+    return error.code;
+  }
+  return undefined;
+}
+
+export function hasErrorCode(error: unknown, code: string): boolean {
+  return getErrorCode(error) === code;
+}
+
+/**
+ * 伺服器明確回錯（交易確定沒有 commit）才是 true。
+ * supabase-js 在網路失敗時 code 是 ''，閘道回的 502／504 也不會帶 code，這些情況伺服器可能已經 commit。
+ */
+export function hasServerErrorCode(error: unknown): boolean {
+  return Boolean(getErrorCode(error));
+}
+
+export type ItemForEdit = NonNullable<Awaited<ReturnType<typeof fetchItemForEdit>>>;
+
+/** 查不到時回傳 null；updated_at 保留 PostgREST 的原始字串（含微秒），送出時原樣交給 update_item 比對 */
+export async function fetchItemForEdit(id: string) {
+  const { data, error } = await supabase
+    .from('items')
+    .select(
+      'id, name_jp, name_tw, slug, category_id, series_id, price, release_date, is_active, official_url, description, note, material, specification, image_cover_url, updated_at, item_images(image_url, display_order), item_characters(character_id)',
+    )
+    .eq('id', id)
+    .order('display_order', { referencedTable: 'item_images', ascending: true })
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
+export interface UpdateItemParams {
+  id: string;
+  expectedUpdatedAt: string;
+  values: ItemFormValues;
+  coverUrl: string;
+  /** 其他圖片的最終網址，依顯示順序排列 */
+  imageUrls: string[];
+}
+
+/** 回傳已經沒有被引用、可以從 R2 刪除的舊網址 */
+export async function updateItem({
+  id,
+  expectedUpdatedAt,
+  values,
+  coverUrl,
+  imageUrls,
+}: UpdateItemParams): Promise<string[]> {
+  const { data, error } = await supabase.rpc('update_item', {
+    p_id: id,
+    p_expected_updated_at: expectedUpdatedAt,
+    p_item: toItemRow(values, coverUrl),
+    p_character_ids: values.character_ids,
+    p_images: imageUrls,
+  });
+  if (error) throw error;
+  return data;
+}
+
 export type ReleaseDateItem = Pick<
   Tables<'items'>,
   'id' | 'name_jp' | 'name_tw' | 'image_cover_url' | 'is_active' | 'price'

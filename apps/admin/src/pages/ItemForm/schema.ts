@@ -18,6 +18,12 @@ export type FormImage =
 /** id 一律 crypto.randomUUID()，只給 dnd-kit 當 key，不代表圖片身分 */
 export type GalleryImage = FormImage & { id: string };
 
+/** 編輯頁載入時的 slug 與上架狀態，用來判斷改 slug 會不會讓前台舊網址失效 */
+export interface ItemOriginal {
+  slug: string;
+  isActive: boolean;
+}
+
 interface BuildSlugParams {
   characterIds: string[];
   categoryId: string;

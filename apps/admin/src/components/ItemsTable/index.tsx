@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router";
 import { Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CharacterTags } from "./CharacterTags";
@@ -19,6 +20,8 @@ export function ItemsTable({
   onToggle,
   isTogglePending,
 }: Props) {
+  const navigate = useNavigate();
+
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
@@ -119,6 +122,7 @@ export function ItemsTable({
                   <Button
                     variant="ghost"
                     size="icon-sm"
+                    onClick={() => navigate(`/items/${item.id}/edit`)}
                     title="編輯"
                     className="text-gray-400 hover:bg-giyu/10 hover:text-giyu"
                   >
