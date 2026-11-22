@@ -20,7 +20,7 @@ export interface UpdateItemInput {
 /** 上傳階段就失敗，DB 還沒有被寫入 */
 export class ImageUploadError extends Error {
   constructor(cause: unknown) {
-    super(toErrorMessage(cause, "圖片上傳失敗"), { cause });
+    super(toErrorMessage(cause, "請稍後再試"), { cause });
     this.name = "ImageUploadError";
   }
 }
