@@ -33,14 +33,17 @@ export function FilterPanel({ open, filters, onApply, onClose }: Props) {
     queryFn: fetchCategories,
   });
 
+  // 清單含停用項目（給編輯頁用），篩選只列啟用中的
   const { data: characters = [] } = useQuery({
     queryKey: ["characters"],
     queryFn: fetchCharacters,
+    select: (list) => list.filter((c) => c.is_active),
   });
 
   const { data: seriesList = [] } = useQuery({
     queryKey: ["series"],
     queryFn: fetchSeries,
+    select: (list) => list.filter((s) => s.is_active),
   });
 
   function updateFilter<K extends keyof ItemFilters>(key: K, value: ItemFilters[K]) {

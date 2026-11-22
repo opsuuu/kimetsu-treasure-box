@@ -73,13 +73,21 @@ export function ItemForm({
     queryKey: ["categories"],
     queryFn: fetchCategories,
   });
+  // 只列啟用中的，加上 defaultValues 引用到的停用項目，編輯頁才能顯示並換掉它們。
+  // 新增頁的預設值是空的，所以只會看到啟用中的
   const { data: characters = [] } = useQuery({
     queryKey: ["characters"],
     queryFn: fetchCharacters,
+    select: (list) =>
+      list.filter(
+        (c) => c.is_active || defaultValues.character_ids.includes(c.id),
+      ),
   });
   const { data: seriesList = [] } = useQuery({
     queryKey: ["series"],
     queryFn: fetchSeries,
+    select: (list) =>
+      list.filter((s) => s.is_active || s.id === defaultValues.series_id),
   });
 
   const {
