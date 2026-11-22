@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
+import { toast } from "sonner";
 import { Plus, Search, Trash2, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAdminItems } from "@/hooks";
@@ -17,7 +18,12 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { cn } from "@/lib/cn";
-import { PAGE_SIZE, defaultFilters, type ItemFilters } from "@/services/items";
+import {
+  PAGE_SIZE,
+  defaultFilters,
+  hasServerErrorCode,
+  type ItemFilters,
+} from "@/services/items";
 
 // 存在 module 裡，離開列表（例如新增、編輯商品）再回來時保留篩選；頁碼是元件 state，回來會是第 1 頁
 let lastFilters: ItemFilters = defaultFilters;
@@ -54,7 +60,17 @@ export default function ItemsPage() {
 
   function confirmDelete() {
     if (!deleteTarget) return;
-    deleteMutation.mutate(deleteTarget.id);
+    deleteMutation.mutate(deleteTarget.id, {
+      onSuccess: () => toast.success("已刪除"),
+      onError: (error) => {
+        // 沒有 code 代表伺服器可能已經 commit，不能當成刪除失敗
+        toast.error(
+          hasServerErrorCode(error)
+            ? "刪除失敗，請稍後再試"
+            : "無法確認是否已刪除，請重新整理列表確認",
+        );
+      },
+    });
     setDeleteTarget(null);
   }
 

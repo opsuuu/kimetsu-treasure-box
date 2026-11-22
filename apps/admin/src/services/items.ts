@@ -356,9 +356,11 @@ export async function reorderItems(ids: string[]): Promise<void> {
   if (error) throw error;
 }
 
-export async function deleteItem(id: string): Promise<void> {
-  const { error } = await supabase.from('items').delete().eq('id', id);
+/** 回傳已經沒有被引用、可以從 R2 刪除的網址；商品不存在時回傳空清單 */
+export async function deleteItem(id: string): Promise<string[]> {
+  const { data, error } = await supabase.rpc('delete_item', { p_id: id });
   if (error) throw error;
+  return data;
 }
 
 export async function toggleItemActive(id: string, isActive: boolean): Promise<void> {
