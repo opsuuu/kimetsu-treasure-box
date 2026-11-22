@@ -82,11 +82,12 @@ export const itemFormSchema = z.object({
     .custom<FormImage | null>()
     .refine((image): image is FormImage => image !== null, "請上傳封面圖片"),
   gallery: z.array(z.custom<GalleryImage>()),
-  // DB 是 bigint，小數送出會被拒絕
+  // DB 是 bigint：只收純數字，擋掉小數、負數與 1e3 這類 Number() 會接受的寫法；
+  // 再限制在安全整數內，toItemRow 的 Number() 才不會失去精度
   price: z
     .string()
-    .refine((v) => !v || Number(v) >= 0, "商品金額不可為負數")
-    .refine((v) => !v || Number.isInteger(Number(v)), "商品金額須為整數"),
+    .refine((v) => !v || /^\d+$/.test(v), "商品金額須為 0 以上的整數")
+    .refine((v) => !v || Number.isSafeInteger(Number(v)), "商品金額過大"),
   release_date: z.string(),
   description: z.string(),
   specification: z.string(),

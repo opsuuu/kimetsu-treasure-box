@@ -168,7 +168,7 @@ type ItemRow = Pick<
 
 /**
  * 空字串一律轉 null：DB 存的是 null，編輯時送 '' 會被 trigger 判定內容有變而改掉 updated_at；
- * update_item 逐欄 ::uuid、::date 轉型，'' 也會得到 22P02。價格由 schema 保證是整數，才能通過 ::bigint。
+ * update_item 逐欄 ::uuid、::date 轉型，'' 也會得到 22P02。價格由 schema 保證是純數字的安全整數，Number() 後才能原樣通過 ::bigint。
  */
 function toItemRow(values: ItemFormValues, imageCoverUrl: string): ItemRow {
   return {
