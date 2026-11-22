@@ -70,8 +70,9 @@ export default function ItemsPage() {
             : "無法確認是否已刪除，請重新整理列表確認",
         );
       },
+      // 視窗留到結束才關，刪除和列表重抓期間按鈕會顯示「刪除中...」
+      onSettled: () => setDeleteTarget(null),
     });
-    setDeleteTarget(null);
   }
 
   return (
