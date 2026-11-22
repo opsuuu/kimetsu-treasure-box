@@ -3,36 +3,69 @@ import { useNavigate } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertCircle, ArrowLeft } from "lucide-react";
+import { toast } from "sonner";
+import { AlertCircle, ArrowLeft, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useCreateItem, toErrorMessage } from "@/hooks";
+import { Modal } from "@/components/Modal";
+import { useUnsavedChangesGuard } from "@/hooks";
 import { fetchCategories } from "@/services/categories";
 import { fetchCharacters } from "@/services/characters";
 import { fetchSeries } from "@/services/series";
+import { FormSection } from "./components/FormSection";
+import { Field } from "./components/Field";
+import { ItemBasicFields } from "./components/ItemBasicFields";
+import { SlugField } from "./components/SlugField";
+import { ItemImageFields } from "./components/ItemImageFields";
+import { ItemPublishSettings } from "./components/ItemPublishSettings";
 import {
-  SLUG_TAKEN_MESSAGE,
-  isSlugConflict,
-  isSlugTaken,
-} from "@/services/items";
-import { FormSection } from "./FormSection";
-import { Field } from "./Field";
-import { ItemBasicFields } from "./ItemBasicFields";
-import { SlugField } from "./SlugField";
-import { ItemImageFields } from "./ItemImageFields";
-import { ItemPublishSettings } from "./ItemPublishSettings";
-import {
-  getCharacterSlugs,
-  itemFormDefaults,
   itemFormSchema,
   type ItemFormInput,
   type ItemFormOutput,
+  type ItemOriginal,
 } from "./schema";
 
-export default function ItemFormPage() {
+interface FormErrorAction {
+  label: string;
+  onClick: () => void;
+  /** true = 按下後會離開這頁，先解除未儲存提示 */
+  leave?: boolean;
+}
+
+export type SubmitResult =
+  | { ok: true }
+  | {
+      ok: false;
+      message: string;
+      field?: "slug";
+      action?: FormErrorAction;
+    };
+
+interface FormError {
+  message: string;
+  action?: FormErrorAction;
+}
+
+interface ItemFormProps {
+  title: string;
+  defaultValues: ItemFormInput;
+  initialSlugAutoGenerate: boolean;
+  /** 載入時的 slug 與上架狀態，用來判斷是否顯示「舊網址會失效」警告；新增頁不傳 */
+  original?: ItemOriginal;
+  onSubmit: (values: ItemFormOutput) => Promise<SubmitResult>;
+}
+
+/** 新增頁與編輯頁共用的表單；送出邏輯由外殼提供，成功後的導頁統一在這裡處理 */
+export function ItemForm({
+  title,
+  defaultValues,
+  initialSlugAutoGenerate,
+  original,
+  onSubmit,
+}: ItemFormProps) {
   const navigate = useNavigate();
-  const [formError, setFormError] = useState<string | null>(null);
+  const [formError, setFormError] = useState<FormError | null>(null);
   // isSubmitting 要等 re-render 才會擋住按鈕，同步鎖確保同一時間只跑一次送出流程
   const submittingRef = useRef(false);
 
@@ -40,16 +73,22 @@ export default function ItemFormPage() {
     queryKey: ["categories"],
     queryFn: fetchCategories,
   });
+  // 只列啟用中的，加上 defaultValues 引用到的停用項目，編輯頁才能顯示並換掉它們。
+  // 新增頁的預設值是空的，所以只會看到啟用中的
   const { data: characters = [] } = useQuery({
     queryKey: ["characters"],
     queryFn: fetchCharacters,
+    select: (list) =>
+      list.filter(
+        (c) => c.is_active || defaultValues.character_ids.includes(c.id),
+      ),
   });
   const { data: seriesList = [] } = useQuery({
     queryKey: ["series"],
     queryFn: fetchSeries,
+    select: (list) =>
+      list.filter((s) => s.is_active || s.id === defaultValues.series_id),
   });
-
-  const { mutation, createdItemId } = useCreateItem();
 
   const {
     register,
@@ -57,52 +96,34 @@ export default function ItemFormPage() {
     handleSubmit,
     setValue,
     setError,
-    formState: { errors, isSubmitting, isSubmitted },
+    formState: { errors, isSubmitting, isSubmitted, isDirty },
   } = useForm<ItemFormInput, unknown, ItemFormOutput>({
     resolver: zodResolver(itemFormSchema),
-    defaultValues: itemFormDefaults,
+    defaultValues,
   });
+
+  // 送出中也要攔：離開後 submitItem 仍在背景執行，成功時的 navigate 會把使用者從別頁拉回列表
+  const { blocker, allowLeave } = useUnsavedChangesGuard(isDirty);
 
   async function submitItem(values: ItemFormOutput) {
     setFormError(null);
-    const { cover, gallery, ...itemValues } = values;
+    const result = await onSubmit(values);
 
-    // 商品已經建立過的重送只需要補圖片，slug 就是它自己，不必再查重
-    if (!createdItemId.current) {
-      try {
-        if (await isSlugTaken(values.slug)) {
-          setError("slug", { message: SLUG_TAKEN_MESSAGE });
-          return;
-        }
-      } catch (error) {
-        setFormError(toErrorMessage(error, "網址名稱檢查失敗，請稍後再試"));
-        return;
-      }
+    if (result.ok) {
+      allowLeave();
+      toast.success("已儲存");
+      // 列表依最近更新排序，回到列表第 1 頁就能看到剛儲存的商品
+      navigate("/items");
+      return;
     }
 
-    try {
-      const itemId = await mutation.mutateAsync({
-        values: itemValues,
-        cover,
-        gallery: gallery.map((image) => image.file),
-        characterSlugs: getCharacterSlugs(values.character_ids, characters),
-      });
-      navigate(`/items/${itemId}/edit`);
-    } catch (error) {
-      if (isSlugConflict(error)) {
-        setError("slug", { message: SLUG_TAKEN_MESSAGE });
-        setFormError(SLUG_TAKEN_MESSAGE);
-        return;
-      }
-      setFormError(
-        createdItemId.current
-          ? `${toErrorMessage(error, "其他圖片儲存失敗")}（商品已建立，可直接再次送出補上圖片）`
-          : toErrorMessage(error, "儲存失敗，請稍後再試"),
-      );
+    if (result.field === "slug") {
+      setError("slug", { message: result.message });
     }
+    setFormError({ message: result.message, action: result.action });
   }
 
-  async function onSubmit(event: SubmitEvent<HTMLFormElement>) {
+  async function handleFormSubmit(event: SubmitEvent<HTMLFormElement>) {
     if (submittingRef.current) {
       event.preventDefault();
       return;
@@ -115,8 +136,15 @@ export default function ItemFormPage() {
     }
   }
 
+  function handleErrorAction(action: FormErrorAction) {
+    if (action.leave) allowLeave();
+    // 重新載入後資料沒變時表單不會 remount，不先清掉的話橫幅會一直停在畫面上
+    setFormError(null);
+    action.onClick();
+  }
+
   return (
-    <form onSubmit={onSubmit}>
+    <form onSubmit={handleFormSubmit}>
       {/* Page header */}
       <div className="mb-6 flex items-center gap-3">
         <Button
@@ -129,17 +157,29 @@ export default function ItemFormPage() {
           <ArrowLeft size={18} />
         </Button>
         <div>
-          <h1 className="text-xl font-bold text-gray-900">新增週邊</h1>
+          <h1 className="text-xl font-bold text-gray-900">{title}</h1>
           <p className="mt-0.5 text-sm text-gray-500">
             標記 <span className="text-red-500">*</span> 為必填欄位
           </p>
         </div>
       </div>
 
+      {/* 錯誤橫幅 */}
       {formError && (
         <div className="mb-4 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
           <AlertCircle size={16} className="mt-0.5 shrink-0" />
-          <span>{formError}</span>
+          <span className="flex-1">{formError.message}</span>
+          {formError.action && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="shrink-0"
+              onClick={() => formError.action && handleErrorAction(formError.action)}
+            >
+              {formError.action.label}
+            </Button>
+          )}
         </div>
       )}
 
@@ -164,13 +204,15 @@ export default function ItemFormPage() {
             characters={characters}
             categories={categories}
             seriesList={seriesList}
+            initialAutoGenerate={initialSlugAutoGenerate}
+            original={original}
           />
 
           <ItemImageFields
             control={control}
             errors={errors}
             disabled={isSubmitting}
-            onError={setFormError}
+            onError={(message) => setFormError({ message })}
           />
 
           <FormSection title="商品詳細資訊" description="以下欄位皆為選填">
@@ -238,11 +280,36 @@ export default function ItemFormPage() {
 
         <ItemPublishSettings
           control={control}
-          register={register}
           isSubmitting={isSubmitting}
+          isDirty={isDirty}
           onCancel={() => navigate("/items")}
         />
       </div>
+
+      {/* 未儲存離開確認 */}
+      <Modal
+        open={blocker.state === "blocked"}
+        onClose={() => blocker.reset?.()}
+        title="尚未儲存"
+        variant="warning"
+        icon={<TriangleAlert size={18} />}
+        footer={
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => blocker.reset?.()}
+            >
+              留在此頁
+            </Button>
+            <Button type="button" onClick={() => blocker.proceed?.()}>
+              確定離開
+            </Button>
+          </>
+        }
+      >
+        有未儲存的修改，確定離開？
+      </Modal>
     </form>
   );
 }

@@ -28,7 +28,7 @@ export default function ItemDetailPage() {
       <Header back={{ label: '返回圖鑑' }} />
 
       {/* 主內容 */}
-      <div className='px-8 pt-8 pb-16 max-w-[1200px] mx-auto'>
+      <div className='px-8 pt-8 pb-16 max-w-300 mx-auto'>
         <div className='grid grid-cols-1 lg:grid-cols-[480px_1fr] gap-10 lg:gap-16 items-start'>
           {/* 左：圖片輪播 */}
           <ItemGallery images={images} itemName={item.name_jp} />

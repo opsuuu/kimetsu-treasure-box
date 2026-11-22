@@ -50,7 +50,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className='max-w-[560px] mx-auto px-8 pt-32'>
+      <div className='max-w-140 mx-auto px-8 pt-32'>
         {/* 關閉按鈕 */}
         <button
           onClick={onClose}

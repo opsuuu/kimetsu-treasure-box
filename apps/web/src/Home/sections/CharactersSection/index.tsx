@@ -20,7 +20,7 @@ export default function CharacterSection() {
   };
 
   return (
-    <section className='py-20 px-8 max-w-[1100px] mx-auto'>
+    <section className='py-20 px-8 max-w-275 mx-auto'>
       <WasujiHeading title='弐' label='角色周邊' />
       {renderContent()}
     </section>

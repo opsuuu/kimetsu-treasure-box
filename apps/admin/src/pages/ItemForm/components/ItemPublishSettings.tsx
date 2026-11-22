@@ -1,9 +1,8 @@
-import { Controller, type UseFormRegister } from "react-hook-form";
+import { Controller } from "react-hook-form";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/cn";
 import { Field } from "./Field";
-import type { ItemFormControl, ItemFormInput } from "./schema";
+import type { ItemFormControl } from "../schema";
 
 const STATUS_OPTIONS = [
   [true, "已上架"],
@@ -12,15 +11,15 @@ const STATUS_OPTIONS = [
 
 interface Props {
   control: ItemFormControl;
-  register: UseFormRegister<ItemFormInput>;
   isSubmitting: boolean;
+  isDirty: boolean;
   onCancel: () => void;
 }
 
 export function ItemPublishSettings({
   control,
-  register,
   isSubmitting,
+  isDirty,
   onCancel,
 }: Props) {
   return (
@@ -56,25 +55,20 @@ export function ItemPublishSettings({
               )}
             />
           </Field>
-
-          <Field label="顯示排序" hint="留空則自動排到最後">
-            <Input
-              type="number"
-              placeholder="自動"
-              {...register("display_order")}
-            />
-          </Field>
         </div>
 
         <div className="flex flex-col gap-2 border-t border-gray-100 px-5 py-4">
           <Button
             type="submit"
             size="lg"
-            disabled={isSubmitting}
+            disabled={isSubmitting || !isDirty}
             className="w-full border-transparent bg-linear-to-r from-giyu to-shinobu text-white hover:from-[#336a91] hover:to-[#6a4f91]"
           >
             {isSubmitting ? "儲存中..." : "儲存週邊"}
           </Button>
+          {!isDirty && (
+            <p className="text-center text-xs text-gray-400">尚未修改</p>
+          )}
           <Button
             type="button"
             variant="outline"

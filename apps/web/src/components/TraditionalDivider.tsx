@@ -7,7 +7,7 @@ export default function TraditionalDivider() {
         aria-hidden
         viewBox='0 0 600 24'
         preserveAspectRatio='xMidYMid meet'
-        className='w-full max-w-[600px] h-6'
+        className='w-full max-w-150 h-6'
       >
         <line
           x1='0'

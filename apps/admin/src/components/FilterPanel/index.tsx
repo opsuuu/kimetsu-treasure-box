@@ -33,14 +33,17 @@ export function FilterPanel({ open, filters, onApply, onClose }: Props) {
     queryFn: fetchCategories,
   });
 
+  // 清單含停用項目（給編輯頁用），篩選只列啟用中的
   const { data: characters = [] } = useQuery({
     queryKey: ["characters"],
     queryFn: fetchCharacters,
+    select: (list) => list.filter((c) => c.is_active),
   });
 
   const { data: seriesList = [] } = useQuery({
     queryKey: ["series"],
     queryFn: fetchSeries,
+    select: (list) => list.filter((s) => s.is_active),
   });
 
   function updateFilter<K extends keyof ItemFilters>(key: K, value: ItemFilters[K]) {
@@ -221,28 +224,6 @@ export function FilterPanel({ open, filters, onApply, onClose }: Props) {
             </div>
           </FilterSection>
 
-          {/* 排序區間 */}
-          <FilterSection title="排序區間">
-            <div className="flex items-center gap-2">
-              <Input
-                type="number"
-                placeholder="從"
-                min={0}
-                value={draft.displayOrderFrom}
-                onChange={(e) => updateFilter("displayOrderFrom", e.target.value)}
-                className="bg-gray-50 focus-visible:border-giyu focus-visible:ring-giyu/20"
-              />
-              <span className="text-gray-400 text-sm">–</span>
-              <Input
-                type="number"
-                placeholder="到"
-                min={0}
-                value={draft.displayOrderTo}
-                onChange={(e) => updateFilter("displayOrderTo", e.target.value)}
-                className="bg-gray-50 focus-visible:border-giyu focus-visible:ring-giyu/20"
-              />
-            </div>
-          </FilterSection>
         </div>
 
         {/* Footer */}

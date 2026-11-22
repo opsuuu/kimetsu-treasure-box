@@ -1,14 +1,22 @@
-import { useState } from "react";
-import { NavLink, Outlet, useNavigate } from "react-router";
+import { useEffect, useRef, useState } from "react";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router";
 import { LogOut, ChevronRight, Menu } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
+import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/cn";
 import { navItems } from "@/config/navigation";
 
 export function AdminLayout() {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { pathname } = useLocation();
+  const mainRef = useRef<HTMLElement>(null);
+
+  // 頁面捲動的是 <main> 而不是 window，換頁時 layout 不會重新掛載，要自己捲回頂端
+  useEffect(() => {
+    mainRef.current?.scrollTo({ top: 0 });
+  }, [pathname]);
 
   async function handleLogout() {
     await supabase.auth.signOut();
@@ -115,10 +123,13 @@ export function AdminLayout() {
         </header>
 
         {/* Content */}
-        <main className="flex-1 overflow-y-auto p-6">
+        <main ref={mainRef} className="flex-1 overflow-y-auto p-6">
           <Outlet />
         </main>
       </div>
+
+      {/* 掛在 layout，換頁時不會 unmount，導頁前呼叫 toast 也看得到 */}
+      <Toaster />
     </div>
   );
 }

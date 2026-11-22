@@ -239,7 +239,7 @@ export type Database = {
           category_id: string | null
           created_at: string | null
           description: string | null
-          display_order: number | null
+          display_order: number
           id: string
           image_cover_url: string | null
           is_active: boolean
@@ -253,13 +253,13 @@ export type Database = {
           series_id: string | null
           slug: string
           specification: string | null
-          updated_at: string | null
+          updated_at: string
         }
         Insert: {
           category_id?: string | null
           created_at?: string | null
           description?: string | null
-          display_order?: number | null
+          display_order: number
           id?: string
           image_cover_url?: string | null
           is_active?: boolean
@@ -273,13 +273,13 @@ export type Database = {
           series_id?: string | null
           slug: string
           specification?: string | null
-          updated_at?: string | null
+          updated_at?: string
         }
         Update: {
           category_id?: string | null
           created_at?: string | null
           description?: string | null
-          display_order?: number | null
+          display_order?: number
           id?: string
           image_cover_url?: string | null
           is_active?: boolean
@@ -293,7 +293,7 @@ export type Database = {
           series_id?: string | null
           slug?: string
           specification?: string | null
-          updated_at?: string | null
+          updated_at?: string
         }
         Relationships: [
           {
@@ -353,7 +353,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      delete_item: { Args: { p_id: string }; Returns: string[] }
+      next_item_display_order: { Args: never; Returns: number }
+      reorder_items: { Args: { p_ids: string[] }; Returns: undefined }
+      unreferenced_image_urls: { Args: { p_urls: string[] }; Returns: string[] }
+      update_item: {
+        Args: {
+          p_character_ids: string[]
+          p_expected_updated_at: string
+          p_id: string
+          p_images: string[]
+          p_item: Json
+        }
+        Returns: string[]
+      }
     }
     Enums: {
       [_ in never]: never

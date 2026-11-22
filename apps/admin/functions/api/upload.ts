@@ -47,7 +47,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
       httpMetadata: { contentType: file.type || 'application/octet-stream' },
     });
   } catch {
-    return Response.json({ error: '圖片上傳失敗，請稍後再試' }, { status: 500 });
+    return Response.json({ error: '儲存空間寫入失敗，請稍後再試' }, { status: 500 });
   }
 
   const url = `${env.PUBLIC_R2_URL.replace(/\/$/, '')}/${key}`;

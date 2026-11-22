@@ -4,20 +4,65 @@ import type { Category } from "@/services/categories";
 import type { Character } from "@/services/characters";
 import type { Series } from "@/services/series";
 
-/** 其他圖片送出前只存在記憶體，需要穩定 id 才能做拖曳排序 */
-export interface GalleryImage {
-  id: string;
-  file: File;
+/**
+ * existing 是已存在 R2 的圖片，new 是尚未上傳、只在記憶體裡的檔案。
+ *
+ * isDirty 依賴 RHF（7.92）的 deepEqual：File 沒有 own keys，會改用 Object.is 比對參照，
+ * 而 defaultValues 的 clone 也保留 File 原參照，所以同一個 File 相等、不同 File 不相等。
+ * 這是 RHF 內部行為，改資料模型或升級 RHF 時要回頭確認。
+ */
+export type FormImage =
+  | { kind: "existing"; url: string }
+  | { kind: "new"; file: File };
+
+/** id 一律 crypto.randomUUID()，只給 dnd-kit 當 key，不代表圖片身分 */
+export type GalleryImage = FormImage & { id: string };
+
+/** 編輯頁載入時的 slug 與上架狀態，用來判斷改 slug 會不會讓前台舊網址失效 */
+export interface ItemOriginal {
+  slug: string;
+  isActive: boolean;
 }
 
 interface BuildSlugParams {
   characterIds: string[];
   categoryId: string;
   seriesId: string;
+  /** 商品修飾：商品名稱的一部分，例 tsunagaru、big */
+  modifier: string;
+  /** 款式：活動裡的哪一款，例 key-visual-a、tokyo、2 */
+  variant: string;
   characters: Character[];
   categories: Category[];
   seriesList: Series[];
 }
+
+export const SLUG_LENGTH_HINT = 60;
+
+export const SLUG_MODIFIER_SUGGESTIONS = [
+  "tsunagaru",
+  "yurugao",
+  "big",
+  "mini",
+  "box",
+  "set",
+];
+
+// 地名依北到南排列
+export const SLUG_VARIANT_SUGGESTIONS = [
+  "key-visual",
+  "hashira-hyakkei",
+  "common",
+  "gotochi",
+  "hokkaido",
+  "tokyo",
+  "ishikawa",
+  "aichi",
+  "kyoto",
+  "osaka",
+  "fukuoka",
+  "kagoshima",
+];
 
 export const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 export const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -34,10 +79,15 @@ export const itemFormSchema = z.object({
     .min(1, "請輸入網址名稱")
     .regex(/^[a-z0-9-]+$/, "僅允許小寫英文字母、數字與連字號"),
   cover: z
-    .custom<File | null>()
-    .refine((file): file is File => file instanceof File, "請上傳封面圖片"),
+    .custom<FormImage | null>()
+    .refine((image): image is FormImage => image !== null, "請上傳封面圖片"),
   gallery: z.array(z.custom<GalleryImage>()),
-  price: z.string().refine((v) => !v || Number(v) >= 0, "商品金額不可為負數"),
+  // DB 是 bigint：只收純數字，擋掉小數、負數與 1e3 這類 Number() 會接受的寫法；
+  // 再限制在安全整數內，toItemRow 的 Number() 才不會失去精度
+  price: z
+    .string()
+    .refine((v) => !v || /^\d+$/.test(v), "商品金額須為 0 以上的整數")
+    .refine((v) => !v || Number.isSafeInteger(Number(v)), "商品金額過大"),
   release_date: z.string(),
   description: z.string(),
   specification: z.string(),
@@ -50,7 +100,6 @@ export const itemFormSchema = z.object({
     ),
   note: z.string(),
   is_active: z.boolean(),
-  display_order: z.string(),
 });
 
 export type ItemFormInput = z.input<typeof itemFormSchema>;
@@ -73,7 +122,6 @@ export const itemFormDefaults: ItemFormInput = {
   official_url: "",
   note: "",
   is_active: true,
-  display_order: "",
 };
 
 export type ItemFormControl = Control<ItemFormInput, unknown, ItemFormOutput>;
@@ -88,8 +136,17 @@ export function getCharacterSlugs(
     .map((c) => c.slug);
 }
 
+// categories.key 是 snake_case（acrylic_stand），且同時是前台 ?category= 的篩選值，不能改成連字號
+export function toSlugSegment(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 /**
- * 組出 {角色}-{類別}-{系列}，缺少的區段直接略過。
+ * 組出 {角色}-{類別}-{商品修飾}-{系列}-{款式}，缺少的區段直接略過。
+ * 商品修飾是商品名稱的一部分（繋がる的 acrylic-stand），所以緊接在類別後。
  * 角色順序取自 characters 陣列本身（fetchCharacters 已依 display_order 排序），
  * 同一組角色才會永遠產生同一個 slug，不受使用者點選先後影響。
  */
@@ -97,6 +154,8 @@ export function buildSlug({
   characterIds,
   categoryId,
   seriesId,
+  modifier,
+  variant,
   characters,
   categories,
   seriesList,
@@ -105,7 +164,9 @@ export function buildSlug({
   const categoryKey = categories.find((c) => c.id === categoryId)?.key;
   const seriesSlug = seriesList.find((s) => s.id === seriesId)?.slug;
 
-  return [...characterSlugs, categoryKey, seriesSlug]
+  return [...characterSlugs, categoryKey, modifier, seriesSlug, variant]
     .filter((part): part is string => Boolean(part))
+    .map(toSlugSegment)
+    .filter(Boolean)
     .join("-");
 }

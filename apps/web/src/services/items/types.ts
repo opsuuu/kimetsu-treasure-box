@@ -12,6 +12,7 @@ export type ItemDetail = Item & {
 };
 
 export type PageCursor = {
+  releaseDate: string | null;
   displayOrder: number;
   id: string;
 };

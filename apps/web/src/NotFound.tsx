@@ -43,14 +43,14 @@ export default function NotFound() {
       <svg
         aria-hidden
         viewBox='0 0 120 120'
-        className='absolute right-16 top-1/3 w-[100px] h-[100px] pointer-events-none opacity-20'
+        className='absolute right-16 top-1/3 w-25 h-25 pointer-events-none opacity-20'
       >
         <Butterfly x={60} y={60} scale={1.8} delay={0} opacity={1} rotate={-8} />
       </svg>
       <svg
         aria-hidden
         viewBox='0 0 80 80'
-        className='absolute left-20 bottom-1/3 w-[64px] h-[64px] pointer-events-none opacity-15'
+        className='absolute left-20 bottom-1/3 w-16 h-16 pointer-events-none opacity-15'
       >
         <Butterfly x={40} y={40} scale={1.2} delay={2} opacity={1} rotate={12} />
       </svg>
@@ -77,7 +77,7 @@ export default function NotFound() {
           四〇四
         </p>
 
-        <div className='w-full max-w-[320px] mb-4'>
+        <div className='w-full max-w-80 mb-4'>
           <TraditionalDivider />
         </div>
 
@@ -90,7 +90,7 @@ export default function NotFound() {
         </h1>
 
         {/* 副標 */}
-        <p className='text-[0.78rem] text-ink-mid leading-[2.2] mb-2 max-w-[300px]'>
+        <p className='text-[0.78rem] text-ink-mid leading-[2.2] mb-2 max-w-75'>
           您尋訪的頁面已不存在
         </p>
         <p className='text-[0.62rem] text-ink-dim tracking-[0.3em] mb-10'>

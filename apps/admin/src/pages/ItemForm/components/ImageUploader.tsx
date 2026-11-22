@@ -19,8 +19,9 @@ import { cn } from "@/lib/cn";
 import {
   ACCEPTED_IMAGE_TYPES,
   MAX_IMAGE_SIZE,
+  type FormImage,
   type GalleryImage,
-} from "./schema";
+} from "../schema";
 
 interface Preview {
   url: string;
@@ -49,8 +50,8 @@ interface SortableThumbProps {
 }
 
 interface CoverUploaderProps {
-  value: File | null;
-  onChange: (file: File | null) => void;
+  value: FormImage | null;
+  onChange: (image: FormImage | null) => void;
   onError: (message: string) => void;
   disabled?: boolean;
 }
@@ -65,38 +66,50 @@ interface GalleryUploaderProps {
 /** 低於此寬度的圖放到前台主圖會糊掉，提醒管理者自行換圖 */
 const LOW_RESOLUTION_WIDTH = 800;
 
-function usePreview(file: File | null): Preview | null {
-  const [loaded, setLoaded] = useState<{ file: File; preview: Preview } | null>(
-    null,
-  );
+type PreviewSource = File | string;
+
+function toPreviewSource(image: FormImage | null): PreviewSource | null {
+  if (!image) return null;
+  return image.kind === "new" ? image.file : image.url;
+}
+
+// effect 只依賴 File 或網址本身，不依賴 FormImage 物件：
+// 表單 re-render 時物件可能換新，依賴它會重建 object URL、重新偵測尺寸
+function usePreview(image: FormImage | null): Preview | null {
+  const source = toPreviewSource(image);
+  const [loaded, setLoaded] = useState<{
+    source: PreviewSource;
+    preview: Preview;
+  } | null>(null);
 
   useEffect(() => {
-    if (!file) return;
+    if (source === null) return;
 
     let cancelled = false;
-    const url = URL.createObjectURL(file);
+    const isFile = source instanceof File;
+    const url = isFile ? URL.createObjectURL(source) : source;
     const probe = new Image();
     probe.onload = () => {
       if (!cancelled) {
         setLoaded({
-          file,
+          source,
           preview: { url, width: probe.naturalWidth, height: probe.naturalHeight },
         });
       }
     };
     probe.onerror = () => {
-      if (!cancelled) setLoaded({ file, preview: { url, width: 0, height: 0 } });
+      if (!cancelled) setLoaded({ source, preview: { url, width: 0, height: 0 } });
     };
     probe.src = url;
 
     return () => {
       cancelled = true;
-      URL.revokeObjectURL(url);
+      if (isFile) URL.revokeObjectURL(url);
     };
-  }, [file]);
+  }, [source]);
 
-  // 只回傳屬於目前 file 的預覽，否則換圖時 <img> 會短暫指向已經 revoke 的舊網址
-  return loaded?.file === file ? loaded.preview : null;
+  // 只回傳屬於目前圖片的預覽，否則換圖時 <img> 會短暫指向已經 revoke 的舊網址
+  return loaded?.source === source ? loaded.preview : null;
 }
 
 function validateFile(file: File): string | null {
@@ -145,7 +158,7 @@ function RemoveButton({ onClick, disabled, alwaysVisible }: RemoveButtonProps) {
 }
 
 function SortableThumb({ image, order, onRemove, disabled }: SortableThumbProps) {
-  const preview = usePreview(image.file);
+  const preview = usePreview(image);
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: image.id, disabled });
 
@@ -211,7 +224,7 @@ export function CoverUploader({
       onError(error);
       return;
     }
-    onChange(file);
+    onChange({ kind: "new", file });
   }
 
   return (
@@ -283,7 +296,7 @@ export function GalleryUploader({
         onError(error);
         continue;
       }
-      accepted.push({ id: crypto.randomUUID(), file });
+      accepted.push({ id: crypto.randomUUID(), kind: "new", file });
     }
 
     if (accepted.length > 0) onChange([...value, ...accepted]);

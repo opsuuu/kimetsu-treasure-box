@@ -17,7 +17,7 @@ import type { Character } from "@/services/characters";
 import type { Series } from "@/services/series";
 import { Field } from "./Field";
 import { FormSection } from "./FormSection";
-import type { ItemFormControl, ItemFormInput } from "./schema";
+import type { ItemFormControl, ItemFormInput } from "../schema";
 
 interface Props {
   control: ItemFormControl;
@@ -87,6 +87,7 @@ export function ItemBasicFields({
                   {seriesList.map((s) => (
                     <SelectItem key={s.id} value={s.id}>
                       {s.name_tw ?? s.name_jp}
+                      {!s.is_active && "（已停用）"}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -111,7 +112,7 @@ export function ItemBasicFields({
             }
           >
             <div className="flex gap-2">
-              {characters.map(({ id, slug, name }) => {
+              {characters.map(({ id, slug, name, is_active }) => {
                 const isGiyu = slug === "giyu";
                 const selected = field.value.includes(id);
                 return (
@@ -135,6 +136,7 @@ export function ItemBasicFields({
                     )}
                   >
                     {name}
+                    {!is_active && "（已停用）"}
                   </button>
                 );
               })}

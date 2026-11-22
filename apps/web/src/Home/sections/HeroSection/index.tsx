@@ -44,7 +44,7 @@ export default function HeroSection() {
         </div>
 
         {/* Subtitle */}
-        <p className='text-[0.82rem] text-ink-mid leading-[2.4] mb-[2.4rem] max-w-[360px] font-mincho tracking-[2px]'>
+        <p className='text-[0.82rem] text-ink-mid leading-[2.4] mb-[2.4rem] max-w-90 font-mincho tracking-[2px]'>
           集結水柱與蟲柱的周邊收藏
           <br />
           <span className='text-[0.72rem] text-ink-dim tracking-[0.25em]'>

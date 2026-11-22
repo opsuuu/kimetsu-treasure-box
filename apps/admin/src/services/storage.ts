@@ -27,7 +27,9 @@ export async function uploadItemImage(
     | null;
 
   if (!res.ok || !data || !('url' in data)) {
-    throw new Error((data && 'error' in data && data.error) || '圖片上傳失敗');
+    throw new Error(
+      (data && 'error' in data && data.error) || '上傳服務沒有回應，請稍後再試',
+    );
   }
 
   return data.url;

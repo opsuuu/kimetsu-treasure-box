@@ -18,7 +18,7 @@ export default function WaterRipple({
       {delays.map((d, i) => (
         <div
           key={i}
-          className='absolute w-[10px] h-[10px] -mt-[5px] -ml-[5px] rounded-full origin-center'
+          className='absolute w-2.5 h-2.5 -mt-1.25 -ml-1.25 rounded-full origin-center'
           style={{
             border: `1.5px solid ${color}`,
             animation: `${i % 2 === 0 ? 'rippleExpand' : 'rippleExpand2'} 3.8s ease-out ${d}s infinite`,

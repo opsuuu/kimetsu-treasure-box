@@ -33,7 +33,7 @@ export default function CategorySection() {
   };
 
   return (
-    <section className='py-16 px-8 max-w-[1100px] mx-auto'>
+    <section className='py-16 px-8 max-w-275 mx-auto'>
       <WasujiHeading title='参' label='周邊類別' />
       {renderContent()}
     </section>

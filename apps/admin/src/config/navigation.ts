@@ -1,4 +1,4 @@
-import { LayoutDashboard, Package } from 'lucide-react';
+import { ArrowDownUp, LayoutDashboard, Package } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 export type NavItem = {
@@ -10,4 +10,5 @@ export type NavItem = {
 export const navItems: NavItem[] = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/items', label: '週邊管理', icon: Package },
+  { to: '/front-order', label: '前台排序', icon: ArrowDownUp },
 ];
