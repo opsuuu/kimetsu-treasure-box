@@ -117,6 +117,7 @@ export interface ItemFormValues {
   price: string;
   release_date: string;
   is_active: boolean;
+  is_blind_box: boolean;
   official_url: string;
   description: string;
   note: string;
@@ -158,6 +159,7 @@ type ItemRow = Pick<
   | 'price'
   | 'release_date'
   | 'is_active'
+  | 'is_blind_box'
   | 'official_url'
   | 'description'
   | 'note'
@@ -180,6 +182,7 @@ function toItemRow(values: ItemFormValues, imageCoverUrl: string): ItemRow {
     price: values.price ? Number(values.price) : null,
     release_date: values.release_date || null,
     is_active: values.is_active,
+    is_blind_box: values.is_blind_box,
     official_url: values.official_url || null,
     description: values.description || null,
     note: values.note || null,
@@ -231,7 +234,7 @@ export async function createItemImages(
   if (error) throw error;
 }
 
-// 對照 migration 20261120120000_item_edit_rpcs.sql 的 update_item，兩邊要一起改
+// 對照 migration 20261125120000_items_is_blind_box.sql 的 update_item（最新定義），兩邊要一起改
 /** update_item：載入後已被其他人更新（p_expected_updated_at 不符） */
 export const ITEM_CONFLICT = 'KT409';
 /** update_item：商品不存在（已被刪除） */
@@ -268,7 +271,7 @@ export async function fetchItemForEdit(id: string) {
   const { data, error } = await supabase
     .from('items')
     .select(
-      'id, name_jp, name_tw, slug, category_id, series_id, price, release_date, is_active, official_url, description, note, material, specification, image_cover_url, updated_at, item_images(image_url, display_order), item_characters(character_id)',
+      'id, name_jp, name_tw, slug, category_id, series_id, price, release_date, is_active, is_blind_box, official_url, description, note, material, specification, image_cover_url, updated_at, item_images(image_url, display_order), item_characters(character_id)',
     )
     .eq('id', id)
     .order('display_order', { referencedTable: 'item_images', ascending: true })

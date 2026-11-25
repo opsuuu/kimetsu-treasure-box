@@ -25,5 +25,6 @@ export function toFormValues(item: ItemForEdit): ItemFormInput {
     official_url: item.official_url ?? "",
     note: item.note ?? "",
     is_active: item.is_active,
+    is_blind_box: item.is_blind_box,
   };
 }

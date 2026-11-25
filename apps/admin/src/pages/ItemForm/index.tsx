@@ -229,6 +229,22 @@ export function ItemForm({
               </Field>
             </div>
 
+            <label className="flex cursor-pointer items-start gap-2.5">
+              <input
+                type="checkbox"
+                className="mt-0.5 size-4 cursor-pointer accent-giyu"
+                {...register("is_blind_box")}
+              />
+              <span>
+                <span className="block text-sm font-medium text-gray-600">
+                  盲抽商品
+                </span>
+                <span className="block text-[11px] text-gray-400">
+                  勾選後前台顯示「盲抽」標籤
+                </span>
+              </span>
+            </label>
+
             <Field label="商品描述">
               <Textarea
                 rows={3}
@@ -267,7 +283,7 @@ export function ItemForm({
 
             <Field
               label="備註說明"
-              hint="會顯示在前台的補充說明，例：此款立牌為盲抽"
+              hint="會顯示在前台的補充說明，例：會場限定販售、附贈特典"
             >
               <Textarea
                 rows={2}
