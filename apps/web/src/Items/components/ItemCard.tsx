@@ -40,6 +40,13 @@ export function ItemCard({ item }: { item: ItemDetail }) {
         />
       </div>
 
+      {/* 盲抽角標：不可移進封面 div，圖片 onError 會改寫該 div 的 innerHTML */}
+      {item.is_blind_box && (
+        <span className='absolute top-2 left-2 bg-washi/90 border border-gold-dim/35 text-gold-dim font-mincho text-[0.58rem] tracking-[0.25em] pl-1.75 pr-1 py-0.5 leading-normal'>
+          盲抽
+        </span>
+      )}
+
       {/* 內容 */}
       <div className='p-3 flex flex-col gap-1.5 flex-1'>
         <div className='flex items-center justify-between gap-1'>

@@ -35,7 +35,7 @@ export default function ItemDetailPage() {
 
           {/* 右：商品資訊 */}
           <div className='flex flex-col gap-6 pt-2 min-w-0'>
-            {/* 角色 ＋ 類別 tags */}
+            {/* 角色 ＋ 類別 ＋ 盲抽 tags */}
             <div className='flex items-center gap-2 flex-wrap'>
               {characters.map((c) => {
                 const t = characterThemes[c.slug] ?? defaultCharacterTheme;
@@ -55,6 +55,11 @@ export default function ItemDetailPage() {
               {item.categories && (
                 <span className='text-[0.58rem] tracking-[0.25em] px-3 py-1 border border-gold/20 text-gold-dim font-sans'>
                   {item.categories.name_tw}
+                </span>
+              )}
+              {item.is_blind_box && (
+                <span className='text-[0.58rem] tracking-[0.25em] px-3 py-1 border border-gold-dim/45 bg-gold/12 text-gold-dim font-sans'>
+                  盲抽
                 </span>
               )}
             </div>
