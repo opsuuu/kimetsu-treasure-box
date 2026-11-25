@@ -243,6 +243,7 @@ export type Database = {
           id: string
           image_cover_url: string | null
           is_active: boolean
+          is_blind_box: boolean
           material: string | null
           name_jp: string
           name_tw: string | null
@@ -263,6 +264,7 @@ export type Database = {
           id?: string
           image_cover_url?: string | null
           is_active?: boolean
+          is_blind_box?: boolean
           material?: string | null
           name_jp: string
           name_tw?: string | null
@@ -283,6 +285,7 @@ export type Database = {
           id?: string
           image_cover_url?: string | null
           is_active?: boolean
+          is_blind_box?: boolean
           material?: string | null
           name_jp?: string
           name_tw?: string | null
