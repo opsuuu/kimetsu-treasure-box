@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CharacterTags } from "./CharacterTags";
@@ -60,14 +60,16 @@ export function ItemsTable({
 
               {/* 名稱 */}
               <td className="px-4 py-3">
-                <p className="font-medium text-gray-900 line-clamp-1">
-                  {item.name_jp}
-                </p>
-                {item.name_tw && (
-                  <p className="text-xs text-gray-400 line-clamp-1">
-                    {item.name_tw}
+                <Link to={`/items/${item.id}/edit`} className="group block">
+                  <p className="font-medium text-gray-900 line-clamp-1 transition-colors group-hover:text-giyu">
+                    {item.name_jp}
                   </p>
-                )}
+                  {item.name_tw && (
+                    <p className="text-xs text-gray-400 line-clamp-1">
+                      {item.name_tw}
+                    </p>
+                  )}
+                </Link>
               </td>
 
               {/* 分類 */}
