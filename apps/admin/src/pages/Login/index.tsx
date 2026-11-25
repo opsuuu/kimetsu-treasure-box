@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
+import { Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,12 +10,15 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.SubmitEvent) {
     e.preventDefault();
     setError("");
+    // 送出後收回明文，避免登入失敗時密碼一直顯示在畫面上
+    setShowPassword(false);
     setLoading(true);
 
     const { data, error: signInError } = await supabase.auth.signInWithPassword(
@@ -79,14 +83,26 @@ export default function LoginPage() {
 
             <div>
               <Label className="mb-1.5 text-gray-700">密碼</Label>
-              <Input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                required
-                className="h-10 bg-gray-50 focus-visible:border-shinobu focus-visible:ring-shinobu/20"
-              />
+              <div className="relative">
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                  className="h-10 bg-gray-50 pr-10 focus-visible:border-shinobu focus-visible:ring-shinobu/20"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  aria-label={showPassword ? "隱藏密碼" : "顯示密碼"}
+                  className="absolute inset-y-0 right-1.5 my-auto text-gray-400 hover:text-gray-600"
+                >
+                  {showPassword ? <EyeOff /> : <Eye />}
+                </Button>
+              </div>
             </div>
 
             {error && (

@@ -49,6 +49,7 @@ export type Item = {
   created_at: string;
   updated_at: string;
   is_active: boolean;
+  is_blind_box: boolean;
   official_url: string | null;
   specification: string | null;
   material: string | null;

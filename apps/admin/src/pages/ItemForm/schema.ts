@@ -100,6 +100,7 @@ export const itemFormSchema = z.object({
     ),
   note: z.string(),
   is_active: z.boolean(),
+  is_blind_box: z.boolean(),
 });
 
 export type ItemFormInput = z.input<typeof itemFormSchema>;
@@ -122,6 +123,7 @@ export const itemFormDefaults: ItemFormInput = {
   official_url: "",
   note: "",
   is_active: true,
+  is_blind_box: false,
 };
 
 export type ItemFormControl = Control<ItemFormInput, unknown, ItemFormOutput>;
